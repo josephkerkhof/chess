@@ -39,24 +39,28 @@ export class TaskList extends OpenAPIRoute {
 
 		// Implement your own object list here
 
+		const tasks = [
+			{
+				name: "Clean my room",
+				slug: "clean-room",
+				description: undefined,
+				completed: false,
+				due_date: "2025-01-05",
+			},
+			{
+				name: "Build something awesome with Cloudflare Workers",
+				slug: "cloudflare-workers",
+				description: "Lorem Ipsum",
+				completed: true,
+				due_date: "2022-12-24",
+			}
+		];
+
 		return {
 			success: true,
-			tasks: [
-				{
-					name: "Clean my room",
-					slug: "clean-room",
-					description: undefined,
-					completed: false,
-					due_date: "2025-01-05",
-				},
-				{
-					name: "Build something awesome with Cloudflare Workers",
-					slug: "cloudflare-workers",
-					description: "Lorem Ipsum",
-					completed: true,
-					due_date: "2022-12-24",
-				},
-			],
+			tasks: tasks.filter(
+				(task) => isCompleted === undefined || task.completed === isCompleted,
+			),
 		};
 	}
 }
