@@ -4,13 +4,17 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+packageExtensionsChecksum: sha256-Ep+ZoRjlYQkcn03iBnet6pRLsIqTppLATJtES9ZXLBs=
+
 importers:
 
-  .:
+  .: {}
+
+  apps/server:
     dependencies:
       chanfana:
         specifier: ^3.3.0
-        version: 3.4.0
+        version: 3.4.0(hono@4.13.4)
       hono:
         specifier: ^4.12.12
         version: 4.13.4
@@ -442,6 +446,8 @@ packages:
     resolution: {integrity: sha512-zNXyjQWnuhxd2m5QOQjAT7dCi8jg/SXckhD3y/Z6PKJfsf/XfSlvxyxFJpJh8O19lrvrsM4SUgEz2628imtWJQ==}
     engines: {node: '>=18'}
     hasBin: true
+    peerDependencies:
+      hono: ^4.0.0
 
   cookie@1.1.1:
     resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
@@ -819,9 +825,10 @@ snapshots:
 
   blake3-wasm@2.1.5: {}
 
-  chanfana@3.4.0:
+  chanfana@3.4.0(hono@4.13.4):
     dependencies:
       '@asteasolutions/zod-to-openapi': 8.5.0(zod@4.4.3)
+      hono: 4.13.4
       js-yaml: 4.3.1
       openapi3-ts: 4.6.1
       yargs-parser: 22.0.0

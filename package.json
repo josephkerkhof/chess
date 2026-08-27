@@ -1,20 +1,11 @@
 {
-  "name": "cloudflare-workers-openapi",
-  "version": "0.0.1",
+  "name": "chess",
   "private": true,
+  "packageManager": "pnpm@11.23.0",
   "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "cf-typegen": "wrangler types"
-  },
-  "dependencies": {
-    "chanfana": "^3.3.0",
-    "hono": "^4.12.12",
-    "zod": "^4.3.6"
-  },
-  "devDependencies": {
-    "@types/node": "^25.9.5",
-    "wrangler": "^4.126.0"
+    "deploy": "pnpm --filter @chess/server deploy",
+    "dev": "pnpm --filter @chess/server dev",
+    "start": "pnpm dev",
+    "cf-typegen": "pnpm --filter @chess/server cf-typegen"
   }
 }
