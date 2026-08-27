@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Cloudflare Worker (Debug)" type="js.build_tools.npm" factoryName="npm">
+    <package-json value="$PROJECT_DIR$/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="dev" />
+    </scripts>
+    <arguments value="--inspector-port 9229" />
+    <node-interpreter value="project" />
+    <package-manager value="pnpm" />
+    <method v="2" />
+  </configuration>
+</component>

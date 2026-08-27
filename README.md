@@ -23,3 +23,7 @@ This is an example project made to be used as a quick start into building OpenAP
 1. Run `wrangler dev` to start a local instance of the API.
 2. Open `http://localhost:8787/` in your browser to see the Swagger interface where you can try the endpoints.
 3. Changes made in the `src/` folder will automatically trigger the server to reload, you only need to refresh the Swagger interface.
+
+## Debugging
+
+Use the shared IntelliJ run configuration `Cloudflare Worker (Debug)`. It starts Wrangler with the local inspector enabled and source maps available for TypeScript breakpoints. Once the server is running, press `d` in the Wrangler terminal to open Cloudflare DevTools, then set a breakpoint in `src/endpoints/taskList.ts` and call the endpoint from the Swagger UI.
