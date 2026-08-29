@@ -1,6 +1,7 @@
 import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import { type AppContext, GameRequest, GameResponse } from "../types";
+import { ServerErrorResponse } from "../errors";
 import { v7 as uuidv7 } from "uuid";
 import { sqliteTimestampToIso } from "../timestamps";
 
@@ -8,12 +9,12 @@ type UserRow = {
   id: number;
   public_id: string;
   name: string;
-}
+};
 
 type GameRow = {
   public_id: string;
   created_at: string;
-}
+};
 
 const initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -46,10 +47,7 @@ export class GameCreate extends OpenAPIRoute {
         description: "Server error",
         content: {
           "application/json": {
-            schema: z.object({
-              success: z.literal(false),
-              message: z.string(),
-            }),
+            schema: ServerErrorResponse,
           },
         },
       },
@@ -67,10 +65,7 @@ export class GameCreate extends OpenAPIRoute {
   };
 
   async handle(c: AppContext) {
-    // Get validated data
     const data = await this.getValidatedData<typeof this.schema>();
-
-    // Retrieve the validated request body
     const requestBody = data.body;
 
     // This endpoint doesn't track who created the game. This is becuase eventually, I want
@@ -80,27 +75,20 @@ export class GameCreate extends OpenAPIRoute {
     // could spam it.
 
     // lookup the users
-    const users = await c.env.DB
-      .prepare("SELECT id, public_id, name FROM users WHERE public_id IN (?, ?)")
-      .bind(
-        requestBody.players[0],
-        requestBody.players[1],
-      )
+    const users = await c.env.DB.prepare(
+      "SELECT id, public_id, name FROM users WHERE public_id IN (?, ?)",
+    )
+      .bind(requestBody.players[0], requestBody.players[1])
       .all<UserRow>();
 
     // bail if the query was unsuccessful
     if (!users.success) {
-      return c.json({
-        success: false,
-        message: "Something went wrong. Please try again.",
-      }, 500);
+      throw new Error("User lookup failed");
     }
 
     // return HTTP 404 if fewer than 2 users were found
     if (users.results.length < 2) {
-      return c.json({
-        success: false,
-      }, 404);
+      return c.json({ success: false }, 404);
     }
 
     // assign black and white roles to players
@@ -108,28 +96,21 @@ export class GameCreate extends OpenAPIRoute {
     if (!first || !second) {
       throw new Error("Expected two users");
     }
-    const [white, black] = Math.random() < 0.5 ? [first, second] : [second, first];
+    const [white, black] =
+      Math.random() < 0.5 ? [first, second] : [second, first];
 
-    const game = await c.env.DB
-      .prepare(`
+    const game = await c.env.DB.prepare(
+      `
         INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
         VALUES (?, ?, ?, 'active', ?)
         RETURNING public_id, created_at
-      `)
-      .bind(
-        uuidv7(),
-        white.id,
-        black.id,
-        initialFen,
-      )
+      `,
+    )
+      .bind(uuidv7(), white.id, black.id, initialFen)
       .first<GameRow>();
 
-    // TODO: this is a pattern I can improve so I don't need to repeat myself so much
     if (!game) {
-      return c.json({
-        success: false,
-        message: "Something went wrong. Please try again.",
-      }, 500);
+      throw new Error("Game insert did not return a row");
     }
 
     // return the new game
