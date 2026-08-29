@@ -1,8 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Cloudflare Worker (Attach IntelliJ Debugger)" type="NodeJSRemoteDebug" factoryName="Attach to Node.js/Chrome">
-    <option name="BREAK_ON_START" value="false" />
-    <option name="LOCALHOST" value="true" />
-    <option name="PORT" value="9229" />
-    <method v="2" />
-  </configuration>
-</component>
