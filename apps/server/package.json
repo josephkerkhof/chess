@@ -2,6 +2,7 @@
   "name": "@chess/server",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
@@ -10,7 +11,8 @@
     "db:migration": "wrangler d1 migrations create DB",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:seed:local": "wrangler d1 execute DB --local --file=seed.sql",
-    "db:open:local": "sqlite3 .wrangler/state/v3/d1/miniflare-D1DatabaseObject/[a-f0-9]*.sqlite"
+    "db:open:local": "sqlite3 .wrangler/state/v3/d1/miniflare-D1DatabaseObject/[a-f0-9]*.sqlite",
+    "test": "vitest run"
   },
   "dependencies": {
     "chanfana": "^3.3.0",
@@ -19,7 +21,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.1.1",
     "@types/node": "^25.9.5",
+    "vitest": "^4.1.11",
     "wrangler": "^4.126.0"
   }
 }
