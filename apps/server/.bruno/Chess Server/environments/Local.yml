@@ -1,0 +1,11 @@
+name: Local
+variables:
+  - name: url
+    value: http://localhost:8787
+    description: ""
+  - name: ada_public_id
+    value: 01890f4e-93ad-7cc4-8a8f-5b2966e01465
+    description: ""
+  - name: grace_public_id
+    value: 01890f4e-93ad-7cc4-8a8f-5b2966e01466
+    description: ""
