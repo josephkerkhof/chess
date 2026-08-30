@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: Chess Server
+  name: Chess Matchmaker
 bundled: false
 extensions:
   bruno:
