@@ -38,6 +38,8 @@ importers:
         specifier: ^4.126.0
         version: 4.126.0
 
+  packages/database: {}
+
 packages:
 
   '@asteasolutions/zod-to-openapi@8.5.0':

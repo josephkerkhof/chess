@@ -4,7 +4,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig(async () => {
   const migrations = await readD1Migrations(
-    path.join(import.meta.dirname, "migrations"),
+    path.join(import.meta.dirname, "../../packages/database/migrations"),
   );
 
   return {

@@ -13,6 +13,7 @@
   "d1_databases": [
     {
       "binding": "DB",
+      "migrations_dir": "../../packages/database/migrations",
     },
   ],
   "upload_source_maps": true,
