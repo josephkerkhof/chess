@@ -39,7 +39,7 @@ describe("POST /api/games", () => {
       success: true,
       game: {
         id: expect.any(String),
-        status: "active",
+        status: "pending",
         turn: "white",
         fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
         moves: [],

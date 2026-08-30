@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export type AppContext = Context<{ Bindings: Env }>;
 
-export const GameStatus = z.enum(["active", "abandoned", "completed"]);
+export const GameStatus = z.enum(["pending", "active", "abandoned", "completed"]);
 export const GameTurn = z.enum(["black", "white"]);
 
 export const GameRequest = z.object({

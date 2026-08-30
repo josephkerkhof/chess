@@ -68,6 +68,8 @@ export class GameCreate extends OpenAPIRoute {
     const data = await this.getValidatedData<typeof this.schema>();
     const requestBody = data.body;
 
+    // TODO: make this route internal-only for the matchmaking DO
+
     // This endpoint doesn't track who created the game. This is becuase eventually, I want
     // to use a matchmaking service. I don't think users will create games directly via this
     // endpoint. We'll see...
@@ -102,7 +104,7 @@ export class GameCreate extends OpenAPIRoute {
     const game = await c.env.DB.prepare(
       `
         INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
-        VALUES (?, ?, ?, 'active', ?)
+        VALUES (?, ?, ?, 'pending', ?)
         RETURNING public_id, created_at
       `,
     )
@@ -119,7 +121,7 @@ export class GameCreate extends OpenAPIRoute {
         success: true,
         game: {
           id: game.public_id,
-          status: "active",
+          status: "pending",
           turn: "white",
           white: { id: white.public_id, name: white.name },
           black: { id: black.public_id, name: black.name },

@@ -7,7 +7,7 @@ CREATE TABLE games (
   white_user_id INTEGER NOT NULL REFERENCES users(id),
   black_user_id INTEGER NOT NULL REFERENCES users(id),
 
-  status TEXT NOT NULL CHECK (status IN ('active', 'abandoned', 'completed')),
+  status TEXT NOT NULL CHECK (status IN ('pending', 'active', 'abandoned', 'completed')),
   fen TEXT NOT NULL,
 
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -18,3 +18,14 @@ CREATE TABLE games (
 
 CREATE INDEX games_white_user_id_idx ON games(white_user_id);
 CREATE INDEX games_black_user_id_idx ON games(black_user_id);
+
+-- automatically set the updated_at time
+CREATE TRIGGER update_games_updated_at
+AFTER UPDATE ON games
+FOR EACH ROW
+WHEN OLD.updated_at IS NEW.updated_at
+BEGIN
+  UPDATE games
+  SET updated_at = CURRENT_TIMESTAMP
+  WHERE id = OLD.id;
+END;
