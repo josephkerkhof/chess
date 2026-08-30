@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chess-game-session",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-25",
+  "observability": {
+    "enabled": true,
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "GAME_SESSION",
+        "class_name": "GameSession",
+      },
+    ],
+  },
+  "exports": {
+    "GameSession": {
+      "type": "durable-object",
+      "storage": "sqlite",
+    },
+  },
+  "upload_source_maps": true,
+}

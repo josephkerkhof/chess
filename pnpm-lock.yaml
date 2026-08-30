@@ -10,6 +10,15 @@ importers:
 
   .: {}
 
+  apps/game-session:
+    devDependencies:
+      '@types/node':
+        specifier: ^25.9.5
+        version: 25.9.5
+      wrangler:
+        specifier: ^4.126.0
+        version: 4.127.0
+
   apps/matchmaker:
     dependencies:
       chanfana:

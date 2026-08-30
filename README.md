@@ -17,7 +17,8 @@ This is an example project made to be used as a quick start into building OpenAP
 1. The Worker is contained in the `apps/matchmaker` workspace package.
 2. Its main router is defined in `apps/matchmaker/src/index.ts`.
 3. Each endpoint has its own file in `apps/matchmaker/src/endpoints/`.
-4. For more information read the [chanfana documentation](https://chanfana.pages.dev/) and [Hono documentation](https://hono.dev/docs).
+4. The live game Durable Object is defined in `apps/game-session/`.
+5. For more information read the [chanfana documentation](https://chanfana.pages.dev/) and [Hono documentation](https://hono.dev/docs).
 
 ## Development
 

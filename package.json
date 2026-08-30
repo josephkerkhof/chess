@@ -6,7 +6,7 @@
     "deploy": "pnpm --filter @chess/matchmaker deploy",
     "dev": "pnpm --filter @chess/matchmaker dev",
     "start": "pnpm dev",
-    "cf-typegen": "pnpm --filter @chess/matchmaker cf-typegen",
+    "cf-typegen": "pnpm --filter './apps/*' --if-present cf-typegen",
     "db:migration": "pnpm --dir apps/matchmaker exec wrangler d1 migrations create DB",
     "db:migrate:local": "pnpm --dir apps/matchmaker exec wrangler d1 migrations apply DB --local",
     "db:fresh:local": "rm -rf apps/matchmaker/.wrangler/state && pnpm db:migrate:local",
