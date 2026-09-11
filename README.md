@@ -5,6 +5,12 @@ This is a Cloudflare Worker with OpenAPI 3.1 using [chanfana](https://github.com
 This is an example project made to be used as a quick start into building OpenAPI compliant Workers that generates the
 `openapi.json` schema automatically from code and validates the incoming request to the defined parameters or request body.
 
+## Development environment
+
+This project uses [devenv](https://devenv.sh/) to provide Node.js, pnpm, and SQLite. After installing Nix and devenv, enter
+the environment with `devenv shell`. If direnv is installed, run `direnv allow` once to activate it automatically when
+entering the repository. Then install the npm dependencies with `pnpm install --frozen-lockfile`.
+
 ## Get started
 
 1. Sign up for [Cloudflare Workers](https://workers.dev). The free tier is more than enough for most use cases.

@@ -1,16 +1,20 @@
 {
   "name": "chess",
   "private": true,
-  "packageManager": "pnpm@11.23.0",
+  "packageManager": "pnpm@11.25.0",
   "scripts": {
     "deploy": "pnpm --filter @chess/matchmaker deploy",
     "dev": "pnpm --filter @chess/matchmaker dev",
     "start": "pnpm dev",
     "cf-typegen": "pnpm --filter './apps/*' --if-present cf-typegen",
+    "typecheck": "tsc --project apps/matchmaker/tsconfig.json && tsc --project apps/game-session/tsconfig.json",
     "db:migration": "pnpm --dir apps/matchmaker exec wrangler d1 migrations create DB",
     "db:migrate:local": "pnpm --dir apps/matchmaker exec wrangler d1 migrations apply DB --local",
     "db:fresh:local": "rm -rf apps/matchmaker/.wrangler/state && pnpm db:migrate:local",
     "db:seed:local": "pnpm --dir apps/matchmaker exec wrangler d1 execute DB --local --file=../../packages/database/seed.sql",
     "db:open:local": "sqlite3 apps/matchmaker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/[a-f0-9]*.sqlite"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
   }
 }
