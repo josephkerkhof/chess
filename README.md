@@ -34,4 +34,13 @@ entering the repository. Then install the npm dependencies with `pnpm install --
 
 ## Debugging
 
-Use the shared IntelliJ run configuration `Cloudflare Worker (Debug)`. It starts Wrangler with the local inspector enabled and source maps available for TypeScript breakpoints. Once the server is running, press `d` in the Wrangler terminal to open Cloudflare DevTools, then set a breakpoint in `apps/matchmaker/src/endpoints/gameCreate.ts` and call the endpoint from the Swagger UI.
+1. Run the shared IntelliJ configuration **Start Dev Server** to start Wrangler inside devenv.
+2. Select **Debug Worker** and click **Debug**. It attaches to the Worker's inspector at `localhost:9229`. If the connection closes, start **Debug Worker** again; automatic reconnection is disabled to avoid repeated reconnect attempts when the inspector is unavailable.
+3. Set a breakpoint in `apps/matchmaker/src/endpoints/gameCreate.ts`, for example on the `DB.prepare` user lookup.
+4. Run **Create Game** from `apps/matchmaker/matchmaker.http` with the `local` environment selected. IntelliJ pauses at the breakpoint so you can inspect variables. Resume execution to let the HTTP request finish.
+
+**Known limitation:** stepping over an `await` in the Workers runtime can resume the whole request instead of pausing on the next statement. This is tracked in [workerd #2962](https://github.com/cloudflare/workerd/issues/2962), and was reproduced with this app in Wrangler 4.127.0 and 4.135.0. Until the runtime issue is resolved, use a breakpoint on the executable statement after the `await` and resume. Disabling automatic reconnection does not fix async stepping.
+
+The API uses port `8787`; the debugger uses port `9229`. Wrangler generates the TypeScript source maps during development.
+Close any browser DevTools session attached to the Worker before using **Debug Worker**, since Wrangler accepts only one debugger client at a time.
+Stopping **Debug Worker** detaches the debugger; use **Stop** on **Start Dev Server** to shut down the server.
