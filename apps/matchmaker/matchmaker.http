@@ -1,0 +1,10 @@
+### Create Game
+POST {{url}}/api/games
+Content-Type: application/json
+
+{
+  "players": [
+    "{{ada_public_id}}",
+    "{{grace_public_id}}"
+  ]
+}

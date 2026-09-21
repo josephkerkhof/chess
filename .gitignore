@@ -171,3 +171,8 @@ dist
 
 .devenv*
 .direnv/
+
+# IntelliJ HTTP Client
+
+http-client.private.env.json
+.idea/httpRequests/
