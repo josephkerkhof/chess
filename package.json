@@ -9,6 +9,7 @@
     "dev:game-session": "pnpm --dir apps/game-session exec wrangler dev --port 8788 --inspector-port 9230",
     "start": "pnpm dev",
     "cf-typegen": "pnpm --filter './apps/*' --if-present cf-typegen",
+    "test": "pnpm -r --if-present run test",
     "typecheck": "tsc --project apps/matchmaker/tsconfig.json && tsc --project apps/matchmaker/test/tsconfig.json && tsc --project apps/game-session/tsconfig.json",
     "db:migration": "pnpm --dir apps/matchmaker exec wrangler d1 migrations create DB",
     "db:migrate:local": "pnpm --dir apps/matchmaker exec wrangler d1 migrations apply DB --local",
