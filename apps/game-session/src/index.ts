@@ -12,6 +12,15 @@ export type GameState = GameInitialization & {
   status: "active";
 };
 
+export type GameMove = {
+  ply: number;
+  san: string;
+};
+
+export type GameSnapshot = GameState & {
+  moves: GameMove[];
+};
+
 export class GameSession extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -24,6 +33,12 @@ export class GameSession extends DurableObject<Env> {
         initial_fen TEXT NOT NULL,
         fen TEXT NOT NULL,
         status TEXT NOT NULL CHECK (status = 'active')
+      )
+    `);
+    this.ctx.storage.sql.exec(`
+      CREATE TABLE IF NOT EXISTS moves (
+        ply INTEGER PRIMARY KEY CHECK (ply > 0),
+        san TEXT NOT NULL
       )
     `);
   }
@@ -74,6 +89,17 @@ export class GameSession extends DurableObject<Env> {
     ).toArray()[0];
 
     return row ?? null;
+  }
+
+  getSnapshot(): GameSnapshot | null {
+    const game = this.getGame();
+    if (!game) return null;
+
+    const moves = this.ctx.storage.sql.exec<GameMove>(
+      "SELECT ply, san FROM moves ORDER BY ply ASC",
+    ).toArray();
+
+    return { ...game, moves };
   }
 }
 

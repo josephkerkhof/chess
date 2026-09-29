@@ -9,6 +9,7 @@ Content-Type: application/json
     "{{grace_public_id}}"
   ]
 }
+> {% if (response.body.success) client.global.set("game_id", response.body.game.id); %}
 
 ### Join matchmaking pool as Ada
 POST {{url}}/api/matchmaking/{{pool_id}}/join
@@ -17,6 +18,7 @@ Content-Type: application/json
 {
   "userId": "{{ada_public_id}}"
 }
+> {% if (response.body.success && response.body.match.status === "matched") client.global.set("game_id", response.body.match.gameId); %}
 
 ### Join matchmaking pool as Grace (creates the game)
 POST {{url}}/api/matchmaking/{{pool_id}}/join
@@ -25,6 +27,10 @@ Content-Type: application/json
 {
   "userId": "{{grace_public_id}}"
 }
+> {% if (response.body.success && response.body.match.status === "matched") client.global.set("game_id", response.body.match.gameId); %}
+
+### Read game snapshot (after Create Game or a successful matchmaking join)
+GET {{url}}/api/games/{{game_id}}
 
 ### Check Ada's match
 GET {{url}}/api/matchmaking/{{pool_id}}/{{ada_public_id}}

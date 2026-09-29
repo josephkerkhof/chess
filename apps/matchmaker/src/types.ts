@@ -38,8 +38,6 @@ export const GameResponse = z.object({
   white: player,
   black: player,
   fen: z.string(), // TODO: add fen validation? see: https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
-  moves: z.array(
-    z.string() // TODO: when we're inserting moves into this array, add validation for those moves
-  ),
-  created_at: z.iso.datetime()
+  moves: z.array(z.object({ ply: z.number().int().positive(), san: z.string() })),
+  createdAt: z.iso.datetime()
 });

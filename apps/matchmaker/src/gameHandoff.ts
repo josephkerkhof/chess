@@ -94,7 +94,7 @@ export async function handoffGame(env: Env, input: GameInput): Promise<{ game: G
       black: { id: black.public_id, name: black.name },
       fen: state.fen,
       moves: [],
-      created_at: sqliteTimestampToIso(row.created_at),
+      createdAt: sqliteTimestampToIso(row.created_at),
     },
   };
 }

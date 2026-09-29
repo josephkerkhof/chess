@@ -1,6 +1,7 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
 import { GameCreate } from "./endpoints/gameCreate";
+import { GameGet } from "./endpoints/gameGet";
 import { MatchmakingJoin, MatchmakingStatus } from "./endpoints/matchmaking";
 import { handleError } from "./errors";
 
@@ -20,6 +21,7 @@ const openapi = fromHono(app, {
 
 // Create a game
 openapi.post("/api/games", GameCreate);
+openapi.get("/api/games/:gameId", GameGet);
 openapi.post("/api/matchmaking/:poolId/join", MatchmakingJoin);
 openapi.get("/api/matchmaking/:poolId/:userId", MatchmakingStatus);
 

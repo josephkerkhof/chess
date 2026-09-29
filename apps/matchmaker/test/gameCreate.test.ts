@@ -26,6 +26,7 @@ const secondGameId = "01890f4e-93ad-7cc4-8a8f-5b2966e01469";
 const thirdGameId = "01890f4e-93ad-7cc4-8a8f-5b2966e0146a";
 const fourthGameId = "01890f4e-93ad-7cc4-8a8f-5b2966e0146b";
 const fifthGameId = "01890f4e-93ad-7cc4-8a8f-5b2966e0146e";
+const missingSessionGameId = "01890f4e-93ad-7cc4-8a8f-5b2966e01470";
 const initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 const join = (poolId: string, userId: string) => exports.default.fetch(
@@ -79,7 +80,7 @@ describe("POST /api/games", () => {
         turn: "white",
         fen: initialFen,
         moves: [],
-        created_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+        createdAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
       },
     });
     expect([body.game.white.id, body.game.black.id].sort()).toEqual(
@@ -214,6 +215,76 @@ describe("POST /api/games", () => {
     expect(await response.json()).toMatchObject({
       success: false,
     });
+  });
+});
+
+describe("GET /api/games/:gameId", () => {
+  it("reads the authoritative snapshot of a game created through matchmaking", async () => {
+    const pool = "snapshot-match";
+    expect((await join(pool, adaPublicId)).status).toBe(200);
+    const joined = await join(pool, gracePublicId);
+    expect(joined.status).toBe(200);
+    const match = (await joined.json() as MatchBody).match;
+    expect(match.status).toBe("matched");
+    if (match.status !== "matched") throw new Error("Expected a game to be created");
+
+    // D1's FEN is creation metadata; the live snapshot must come from the session.
+    await env.DB.prepare("UPDATE games SET fen = ? WHERE public_id = ?")
+      .bind("not the current position", match.gameId).run();
+
+    const response = await exports.default.fetch(`http://example.com/api/games/${match.gameId}`);
+    expect(response.status).toBe(200);
+    const body = await response.json() as GameBody;
+    expect(body).toEqual({
+      success: true,
+      game: {
+        id: match.gameId,
+        status: "active",
+        turn: "white",
+        white: { id: expect.any(String), name: expect.any(String) },
+        black: { id: expect.any(String), name: expect.any(String) },
+        fen: initialFen,
+        moves: [],
+        createdAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      },
+    });
+    expect([body.game.white, body.game.black]).toEqual(expect.arrayContaining([
+      { id: adaPublicId, name: "Ada" },
+      { id: gracePublicId, name: "Grace" },
+    ]));
+    expect(await gameSession(match.gameId).getSnapshot()).toMatchObject({
+      gameId: match.gameId,
+      fen: initialFen,
+      moves: [],
+    });
+  });
+
+  it("returns 404 for an unknown or not-yet-active game", async () => {
+    const unknown = await exports.default.fetch(`http://example.com/api/games/${firstGameId}`);
+    expect(unknown.status).toBe(404);
+    expect(await unknown.json()).toEqual({ success: false });
+
+    await env.DB.prepare(
+      `INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
+       VALUES (?, (SELECT id FROM users WHERE public_id = ?),
+                  (SELECT id FROM users WHERE public_id = ?), 'pending', ?)`,
+    ).bind(secondGameId, adaPublicId, gracePublicId, initialFen).run();
+    const pending = await exports.default.fetch(`http://example.com/api/games/${secondGameId}`);
+    expect(pending.status).toBe(404);
+    expect(await pending.json()).toEqual({ success: false });
+  });
+
+  it("does not invent a snapshot for an active D1 row with no session", async () => {
+    expect(await gameSession(missingSessionGameId).getSnapshot()).toBeNull();
+    await env.DB.prepare(
+      `INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
+       VALUES (?, (SELECT id FROM users WHERE public_id = ?),
+                  (SELECT id FROM users WHERE public_id = ?), 'active', ?)`,
+    ).bind(missingSessionGameId, adaPublicId, gracePublicId, initialFen).run();
+
+    const response = await exports.default.fetch(`http://example.com/api/games/${missingSessionGameId}`);
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ success: false });
   });
 });
 
