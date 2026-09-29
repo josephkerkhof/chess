@@ -14,6 +14,18 @@ export const GameRequest = z.object({
   ),
 });
 
+export const MatchmakingPoolId = z.string().regex(/^[a-z][a-z0-9-]{0,31}$/);
+
+export const MatchmakingState = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("waiting") }),
+  z.object({
+    status: z.literal("matched"),
+    gameId: z.uuidv7(),
+    color: z.enum(["white", "black"]),
+    opponentId: z.uuidv7(),
+  }),
+]);
+
 const player = z.object({
   id: z.uuidv7(),
   name: z.string()

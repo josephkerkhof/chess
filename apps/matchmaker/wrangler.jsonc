@@ -23,7 +23,17 @@
         "class_name": "GameSession",
         "script_name": "chess-game-session",
       },
+      {
+        "name": "MATCHMAKING_QUEUE",
+        "class_name": "MatchmakingQueue",
+      },
     ],
+  },
+  "exports": {
+    "MatchmakingQueue": {
+      "type": "durable-object",
+      "storage": "sqlite",
+    },
   },
   "upload_source_maps": true,
   /**

@@ -4,7 +4,8 @@
   "packageManager": "pnpm@11.25.0",
   "scripts": {
     "deploy": "pnpm --filter @chess/game-session deploy && pnpm --filter @chess/matchmaker deploy",
-    "dev": "pnpm --filter @chess/matchmaker dev",
+    "dev": "pnpm --dir apps/matchmaker exec wrangler dev -c wrangler.jsonc -c ../game-session/wrangler.jsonc",
+    "dev:matchmaker": "pnpm --filter @chess/matchmaker dev",
     "dev:game-session": "pnpm --dir apps/game-session exec wrangler dev --port 8788 --inspector-port 9230",
     "start": "pnpm dev",
     "cf-typegen": "pnpm --filter './apps/*' --if-present cf-typegen",
