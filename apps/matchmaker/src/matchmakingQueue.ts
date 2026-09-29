@@ -19,27 +19,33 @@ type MatchRow = {
 export class MatchmakingQueue extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
-    this.ctx.storage.sql.exec(`
-      CREATE TABLE IF NOT EXISTS entries (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT NOT NULL UNIQUE,
-        game_id TEXT
-      )
-    `);
-    this.ctx.storage.sql.exec(`
-      CREATE INDEX IF NOT EXISTS entries_waiting_idx ON entries(game_id, id)
-    `);
-    this.ctx.storage.sql.exec(`
-      CREATE TABLE IF NOT EXISTS matches (
-        game_id TEXT PRIMARY KEY,
-        first_user_id TEXT NOT NULL,
-        second_user_id TEXT NOT NULL,
-        white_user_id TEXT,
-        black_user_id TEXT,
-        status TEXT NOT NULL CHECK (status IN ('pending', 'active')),
-        CHECK (first_user_id <> second_user_id)
-      )
-    `);
+    this.ctx.storage.sql.exec(
+        `
+          CREATE TABLE IF NOT EXISTS entries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL UNIQUE,
+            game_id TEXT
+          );
+        `
+    );
+    this.ctx.storage.sql.exec(
+        `
+          CREATE INDEX IF NOT EXISTS entries_waiting_idx ON entries(game_id, id);
+        `
+    );
+    this.ctx.storage.sql.exec(
+        `
+          CREATE TABLE IF NOT EXISTS matches (
+            game_id TEXT PRIMARY KEY,
+            first_user_id TEXT NOT NULL,
+            second_user_id TEXT NOT NULL,
+            white_user_id TEXT,
+            black_user_id TEXT,
+            status TEXT NOT NULL CHECK (status IN ('pending', 'active')),
+            CHECK (first_user_id <> second_user_id)
+          );
+        `
+    );
   }
 
   async join(userId: string): Promise<MatchState | null> {
@@ -49,7 +55,11 @@ export class MatchmakingQueue extends DurableObject<Env> {
     }
 
     const user = await this.env.DB.prepare(
-      "SELECT id FROM users WHERE public_id = ?",
+        `
+          SELECT id
+          FROM users
+          WHERE public_id = ?;
+        `,
     ).bind(userId).first<{ id: number }>();
     if (!user) {
       return null;
@@ -62,25 +72,47 @@ export class MatchmakingQueue extends DurableObject<Env> {
       }
 
       const waiting = this.ctx.storage.sql.exec<{ user_id: string }>(
-        "SELECT user_id FROM entries WHERE game_id IS NULL ORDER BY id LIMIT 1",
+          `
+            SELECT user_id
+            FROM entries
+            WHERE game_id IS NULL
+            ORDER BY id
+            LIMIT 1;
+          `,
       ).toArray()[0];
       if (!waiting) {
-        this.ctx.storage.sql.exec("INSERT INTO entries (user_id) VALUES (?)", userId);
+        this.ctx.storage.sql.exec(
+            `
+              INSERT INTO entries (user_id)
+              VALUES (?);
+            `,
+            userId,
+        );
         return;
       }
 
       const gameId = uuidv7();
       this.ctx.storage.sql.exec(
-        "INSERT INTO matches (game_id, first_user_id, second_user_id, status) VALUES (?, ?, ?, 'pending')",
-        gameId, waiting.user_id, userId,
+          `
+            INSERT INTO matches (game_id, first_user_id, second_user_id, status)
+            VALUES (?, ?, ?, 'pending');
+          `,
+          gameId, waiting.user_id, userId,
       );
       this.ctx.storage.sql.exec(
-        "UPDATE entries SET game_id = ? WHERE user_id = ?",
-        gameId, waiting.user_id,
+          `
+            UPDATE entries
+            SET game_id = ?
+            WHERE user_id = ?;
+          `,
+          gameId, waiting.user_id,
       );
       this.ctx.storage.sql.exec(
-        "INSERT INTO entries (user_id, game_id) VALUES (?, ?)",
-        userId, gameId,
+          `
+            INSERT INTO entries (user_id, game_id)
+            VALUES (?, ?);
+          `,
+          userId, gameId,
       );
     });
 
@@ -120,16 +152,24 @@ export class MatchmakingQueue extends DurableObject<Env> {
 
   #entry(userId: string): EntryRow | undefined {
     return this.ctx.storage.sql.exec<EntryRow>(
-      "SELECT game_id FROM entries WHERE user_id = ?",
-      userId,
+        `
+          SELECT game_id
+          FROM entries
+          WHERE user_id = ?;
+        `,
+        userId,
     ).toArray()[0];
   }
 
   #match(gameId: string): MatchRow | undefined {
     return this.ctx.storage.sql.exec<MatchRow>(
-      `SELECT game_id, first_user_id, second_user_id, white_user_id,
-              black_user_id, status FROM matches WHERE game_id = ?`,
-      gameId,
+        `
+          SELECT game_id, first_user_id, second_user_id, white_user_id,
+                 black_user_id, status
+          FROM matches
+          WHERE game_id = ?;
+        `,
+        gameId,
     ).toArray()[0];
   }
 
@@ -139,9 +179,12 @@ export class MatchmakingQueue extends DurableObject<Env> {
       players: [match.first_user_id, match.second_user_id],
     });
     this.ctx.storage.sql.exec(
-      `UPDATE matches SET status = 'active', white_user_id = ?, black_user_id = ?
-       WHERE game_id = ? AND status = 'pending'`,
-      game.white.id, game.black.id, match.game_id,
+        `
+          UPDATE matches
+          SET status = 'active', white_user_id = ?, black_user_id = ?
+          WHERE game_id = ? AND status = 'pending';
+        `,
+        game.white.id, game.black.id, match.game_id,
     );
   }
 }

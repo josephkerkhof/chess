@@ -25,23 +25,27 @@ export type GameSnapshot = GameState & {
 export class GameSession extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
-    this.ctx.storage.sql.exec(`
-      CREATE TABLE IF NOT EXISTS game (
-        id INTEGER PRIMARY KEY CHECK (id = 1),
-        game_id TEXT NOT NULL,
-        white_user_id TEXT NOT NULL,
-        black_user_id TEXT NOT NULL,
-        initial_fen TEXT NOT NULL,
-        fen TEXT NOT NULL,
-        status TEXT NOT NULL CHECK (status = 'active')
-      )
-    `);
-    this.ctx.storage.sql.exec(`
-      CREATE TABLE IF NOT EXISTS moves (
-        ply INTEGER PRIMARY KEY CHECK (ply > 0),
-        san TEXT NOT NULL
-      )
-    `);
+    this.ctx.storage.sql.exec(
+        `
+          CREATE TABLE IF NOT EXISTS game (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            game_id TEXT NOT NULL,
+            white_user_id TEXT NOT NULL,
+            black_user_id TEXT NOT NULL,
+            initial_fen TEXT NOT NULL,
+            fen TEXT NOT NULL,
+            status TEXT NOT NULL CHECK (status = 'active')
+          );
+        `
+    );
+    this.ctx.storage.sql.exec(
+        `
+          CREATE TABLE IF NOT EXISTS moves (
+            ply INTEGER PRIMARY KEY CHECK (ply > 0),
+            san TEXT NOT NULL
+          );
+        `
+    );
   }
 
   initializeGame(input: GameInitialization): GameState {
@@ -63,14 +67,16 @@ export class GameSession extends DurableObject<Env> {
     }
 
     this.ctx.storage.sql.exec(
-      `INSERT INTO game (id, game_id, white_user_id, black_user_id, initial_fen, fen, status)
-       VALUES (1, ?, ?, ?, ?, ?, ?)`,
-      input.gameId,
-      input.whiteUserId,
-      input.blackUserId,
-      input.initialFen,
-      input.initialFen,
-      GameStatus.Active,
+        `
+          INSERT INTO game (id, game_id, white_user_id, black_user_id, initial_fen, fen, status)
+          VALUES (1, ?, ?, ?, ?, ?, ?);
+        `,
+        input.gameId,
+        input.whiteUserId,
+        input.blackUserId,
+        input.initialFen,
+        input.initialFen,
+        GameStatus.Active,
     );
 
     return { ...input, fen: input.initialFen, status: GameStatus.Active };
@@ -86,7 +92,7 @@ export class GameSession extends DurableObject<Env> {
                  fen,
                  status
           FROM game
-          WHERE id = 1
+          WHERE id = 1;
         `,
     ).toArray()[0];
 
@@ -98,7 +104,11 @@ export class GameSession extends DurableObject<Env> {
     if (!game) return null;
 
     const moves = this.ctx.storage.sql.exec<GameMove>(
-      "SELECT ply, san FROM moves ORDER BY ply ASC",
+        `
+          SELECT ply, san
+          FROM moves
+          ORDER BY ply ASC;
+        `,
     ).toArray();
 
     return { ...game, moves };

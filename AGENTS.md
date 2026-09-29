@@ -19,6 +19,31 @@ For all limits and quotas, retrieve from the product's `/platform/limits/` page.
 
 Run `wrangler types` after changing bindings in wrangler.jsonc.
 
+## SQL formatting
+
+Write every SQL query embedded in TypeScript (including tests) as a multiline backtick string. Follow the IDE formatter's SQL layout: indent a template argument four spaces beyond its call, indent SQL two spaces beyond the backticks, align continuation lines, and indent `JOIN` clauses under `FROM` as shown below. Put major clauses on separate lines and end the statement with a semicolon. Keep SQL in `.sql` files as SQL.
+
+Bad:
+
+```ts
+const row = await env.DB.prepare(
+  "SELECT games.public_id FROM games JOIN users AS white ON white.id = games.white_user_id WHERE games.public_id = ?",
+);
+```
+
+Good:
+
+```ts
+const row = await env.DB.prepare(
+    `
+      SELECT games.public_id
+      FROM games
+             JOIN users AS white ON white.id = games.white_user_id
+      WHERE games.public_id = ?;
+    `,
+);
+```
+
 ## Node.js Compatibility
 
 https://developers.cloudflare.com/workers/runtime-apis/nodejs/

@@ -47,13 +47,16 @@ export class GameGet extends OpenAPIRoute {
   async handle(c: AppContext) {
     const { params } = await this.getValidatedData<typeof this.schema>();
     const row = await c.env.DB.prepare(
-      `SELECT white.public_id AS white_user_id, white.name AS white_name,
-              black.public_id AS black_user_id, black.name AS black_name,
-              games.created_at
-       FROM games
-       JOIN users AS white ON white.id = games.white_user_id
-       JOIN users AS black ON black.id = games.black_user_id
-       WHERE games.public_id = ? AND games.status = ?`,
+        `
+          SELECT white.public_id AS white_user_id, white.name AS white_name,
+                 black.public_id AS black_user_id, black.name AS black_name,
+                 games.created_at
+          FROM games
+                 JOIN users AS white ON white.id = games.white_user_id
+                 JOIN users AS black ON black.id = games.black_user_id
+          WHERE games.public_id = ?
+            AND games.status = ?;
+        `,
     ).bind(params.gameId, GameStatus.Active).first<GameRow>();
     if (!row) return c.json({ success: false }, 404);
 

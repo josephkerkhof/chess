@@ -43,15 +43,33 @@ const status = (poolId: string, userId: string) => exports.default.fetch(
 );
 
 beforeEach(async () => {
-  await env.DB.prepare("DELETE FROM games").run();
-  await env.DB.prepare("DELETE FROM users").run();
+  await env.DB.prepare(
+      `
+        DELETE FROM games;
+      `
+  ).run();
+  await env.DB.prepare(
+      `
+        DELETE FROM users;
+      `
+  ).run();
 
   await env.DB.batch([
-    env.DB.prepare("INSERT INTO users (public_id, name) VALUES (?, ?)").bind(
+    env.DB.prepare(
+        `
+          INSERT INTO users (public_id, name)
+          VALUES (?, ?);
+        `
+    ).bind(
       adaPublicId,
       "Ada",
     ),
-    env.DB.prepare("INSERT INTO users (public_id, name) VALUES (?, ?)").bind(
+    env.DB.prepare(
+        `
+          INSERT INTO users (public_id, name)
+          VALUES (?, ?);
+        `
+    ).bind(
       gracePublicId,
       "Grace",
     ),
@@ -88,7 +106,11 @@ describe("POST /api/games", () => {
     );
 
     const stored = await env.DB.prepare(
-      "SELECT status FROM games WHERE public_id = ?",
+        `
+          SELECT status
+          FROM games
+          WHERE public_id = ?;
+        `,
     ).bind(firstGameId).first<{ status: string }>();
     expect(stored?.status).toBe("active");
 
@@ -119,14 +141,23 @@ describe("POST /api/games", () => {
     expect(((await second.json()) as GameBody).game).toEqual(((await first.json()) as GameBody).game);
 
     const count = await env.DB.prepare(
-      "SELECT COUNT(*) AS count FROM games WHERE public_id = ?",
+        `
+          SELECT COUNT(*) AS count
+          FROM games
+          WHERE public_id = ?;
+        `,
     ).bind(secondGameId).first<{ count: number }>();
     expect(count?.count).toBe(1);
   });
 
   it("rejects reuse of a game ID for different players", async () => {
     const thirdPlayer = "01890f4e-93ad-7cc4-8a8f-5b2966e0146c";
-    await env.DB.prepare("INSERT INTO users (public_id, name) VALUES (?, ?)")
+    await env.DB.prepare(
+        `
+          INSERT INTO users (public_id, name)
+          VALUES (?, ?);
+        `
+    )
       .bind(thirdPlayer, "Judit").run();
 
     const create = (players: string[]) => exports.default.fetch(
@@ -163,16 +194,22 @@ describe("POST /api/games", () => {
 
     expect(response.status).toBe(500);
     const row = await env.DB.prepare(
-      "SELECT status FROM games WHERE public_id = ?",
+        `
+          SELECT status
+          FROM games
+          WHERE public_id = ?;
+        `,
     ).bind(fourthGameId).first<{ status: string }>();
     expect(row?.status).toBe("pending");
   });
 
   it("completes a handoff when the session exists but D1 is still pending", async () => {
     await env.DB.prepare(
-      `INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
-       VALUES (?, (SELECT id FROM users WHERE public_id = ?),
-                  (SELECT id FROM users WHERE public_id = ?), 'pending', ?)`,
+        `
+          INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
+          VALUES (?, (SELECT id FROM users WHERE public_id = ?),
+                     (SELECT id FROM users WHERE public_id = ?), 'pending', ?);
+        `,
     ).bind(fifthGameId, adaPublicId, gracePublicId, initialFen).run();
     await gameSession(fifthGameId).initializeGame({
       gameId: fifthGameId,
@@ -229,7 +266,13 @@ describe("GET /api/games/:gameId", () => {
     if (match.status !== "matched") throw new Error("Expected a game to be created");
 
     // D1's FEN is creation metadata; the live snapshot must come from the session.
-    await env.DB.prepare("UPDATE games SET fen = ? WHERE public_id = ?")
+    await env.DB.prepare(
+        `
+          UPDATE games
+          SET fen = ?
+          WHERE public_id = ?;
+        `
+    )
       .bind("not the current position", match.gameId).run();
 
     const response = await exports.default.fetch(`http://example.com/api/games/${match.gameId}`);
@@ -265,9 +308,11 @@ describe("GET /api/games/:gameId", () => {
     expect(await unknown.json()).toEqual({ success: false });
 
     await env.DB.prepare(
-      `INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
-       VALUES (?, (SELECT id FROM users WHERE public_id = ?),
-                  (SELECT id FROM users WHERE public_id = ?), 'pending', ?)`,
+        `
+          INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
+          VALUES (?, (SELECT id FROM users WHERE public_id = ?),
+                     (SELECT id FROM users WHERE public_id = ?), 'pending', ?);
+        `,
     ).bind(secondGameId, adaPublicId, gracePublicId, initialFen).run();
     const pending = await exports.default.fetch(`http://example.com/api/games/${secondGameId}`);
     expect(pending.status).toBe(404);
@@ -277,9 +322,11 @@ describe("GET /api/games/:gameId", () => {
   it("does not invent a snapshot for an active D1 row with no session", async () => {
     expect(await gameSession(missingSessionGameId).getSnapshot()).toBeNull();
     await env.DB.prepare(
-      `INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
-       VALUES (?, (SELECT id FROM users WHERE public_id = ?),
-                  (SELECT id FROM users WHERE public_id = ?), 'active', ?)`,
+        `
+          INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
+          VALUES (?, (SELECT id FROM users WHERE public_id = ?),
+                     (SELECT id FROM users WHERE public_id = ?), 'active', ?);
+        `,
     ).bind(missingSessionGameId, adaPublicId, gracePublicId, initialFen).run();
 
     const response = await exports.default.fetch(`http://example.com/api/games/${missingSessionGameId}`);
@@ -315,7 +362,11 @@ describe("matchmaking queue", () => {
     });
 
     const stored = await env.DB.prepare(
-      "SELECT status FROM games WHERE public_id = ?",
+        `
+          SELECT status
+          FROM games
+          WHERE public_id = ?;
+        `,
     ).bind(grace.gameId).first<{ status: string }>();
     expect(stored?.status).toBe("active");
     expect(await gameSession(grace.gameId).getGame()).toMatchObject({
@@ -325,7 +376,12 @@ describe("matchmaking queue", () => {
 
     const duplicateJoin = await join(pool, gracePublicId);
     expect((await duplicateJoin.json() as MatchBody).match).toEqual(grace);
-    const count = await env.DB.prepare("SELECT COUNT(*) AS count FROM games")
+    const count = await env.DB.prepare(
+        `
+          SELECT COUNT(*) AS count
+          FROM games;
+        `
+    )
       .first<{ count: number }>();
     expect(count?.count).toBe(1);
   });
@@ -346,9 +402,19 @@ describe("matchmaking queue", () => {
     const juditPublicId = "01890f4e-93ad-7cc4-8a8f-5b2966e0146c";
     const bobbyPublicId = "01890f4e-93ad-7cc4-8a8f-5b2966e0146f";
     await env.DB.batch([
-      env.DB.prepare("INSERT INTO users (public_id, name) VALUES (?, ?)")
+      env.DB.prepare(
+          `
+            INSERT INTO users (public_id, name)
+            VALUES (?, ?);
+          `
+      )
         .bind(juditPublicId, "Judit"),
-      env.DB.prepare("INSERT INTO users (public_id, name) VALUES (?, ?)")
+      env.DB.prepare(
+          `
+            INSERT INTO users (public_id, name)
+            VALUES (?, ?);
+          `
+      )
         .bind(bobbyPublicId, "Bobby"),
     ]);
 
@@ -372,7 +438,12 @@ describe("matchmaking queue", () => {
       result.status === "matched" ? [result.gameId] : [],
     ));
     expect(gameIds.size).toBe(2);
-    const count = await env.DB.prepare("SELECT COUNT(*) AS count FROM games")
+    const count = await env.DB.prepare(
+        `
+          SELECT COUNT(*) AS count
+          FROM games;
+        `
+    )
       .first<{ count: number }>();
     expect(count?.count).toBe(2);
   });
@@ -380,10 +451,20 @@ describe("matchmaking queue", () => {
   it("retries a reserved match after handoff failure", async () => {
     const pool = "retry-handoff";
     expect((await join(pool, adaPublicId)).status).toBe(200);
-    await env.DB.prepare("DELETE FROM users WHERE public_id = ?").bind(adaPublicId).run();
+    await env.DB.prepare(
+        `
+          DELETE FROM users
+          WHERE public_id = ?;
+        `
+    ).bind(adaPublicId).run();
 
     expect((await join(pool, gracePublicId)).status).toBe(500);
-    await env.DB.prepare("INSERT INTO users (public_id, name) VALUES (?, ?)")
+    await env.DB.prepare(
+        `
+          INSERT INTO users (public_id, name)
+          VALUES (?, ?);
+        `
+    )
       .bind(adaPublicId, "Ada").run();
 
     const recovered = (await (await status(pool, adaPublicId)).json() as MatchBody).match;
@@ -391,7 +472,12 @@ describe("matchmaking queue", () => {
     if (recovered.status !== "matched") throw new Error("Expected recovery to complete");
     const grace = (await (await status(pool, gracePublicId)).json() as MatchBody).match;
     expect(grace).toMatchObject({ status: "matched", gameId: recovered.gameId });
-    const count = await env.DB.prepare("SELECT COUNT(*) AS count FROM games")
+    const count = await env.DB.prepare(
+        `
+          SELECT COUNT(*) AS count
+          FROM games;
+        `
+    )
       .first<{ count: number }>();
     expect(count?.count).toBe(1);
   });
