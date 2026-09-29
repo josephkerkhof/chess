@@ -7,6 +7,7 @@ export const GameStatus = z.enum(["pending", "active", "abandoned", "completed"]
 export const GameTurn = z.enum(["black", "white"]);
 
 export const GameRequest = z.object({
+  gameId: z.uuidv7(),
   players: z.tuple([z.uuidv7(), z.uuidv7()]).refine(
     ([first, second]) => first !== second,
     "Players must be distinct"

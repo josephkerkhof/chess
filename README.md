@@ -16,7 +16,7 @@ entering the repository. Then install the npm dependencies with `pnpm install --
 1. Sign up for [Cloudflare Workers](https://workers.dev). The free tier is more than enough for most use cases.
 2. Clone this project and install dependencies with `pnpm install`.
 3. Run `wrangler login` to login to your Cloudflare account in wrangler
-4. Run `pnpm deploy` to publish the API to Cloudflare Workers.
+4. Run `pnpm deploy` to publish the game-session Worker, then the matchmaker API, to Cloudflare Workers.
 
 ## Project structure
 
@@ -28,13 +28,16 @@ entering the repository. Then install the npm dependencies with `pnpm install --
 
 ## Development
 
-1. Run `pnpm dev` to start a local instance of the API.
-2. Open `http://localhost:8787/` in your browser to see the Swagger interface where you can try the endpoints.
-3. Changes made in `apps/matchmaker/src/` will automatically trigger the server to reload; you only need to refresh the Swagger interface.
+1. In one terminal, run `pnpm dev:game-session` to start the game-session Worker on port `8788`.
+2. In another terminal, run `pnpm dev` to start the matchmaker API on port `8787`.
+3. Open `http://localhost:8787/` in your browser to see the Swagger interface where you can try the endpoints.
+4. Changes made in either Worker will automatically trigger its server to reload. Refresh the Swagger interface after matchmaker changes.
+
+Game creation now requires a caller-assigned UUIDv7 `gameId`. Reuse the same ID when retrying a match: the API returns `201` for a new game and `200` for a retry. The game remains `pending` in D1 if session initialization fails, so the same request can complete the handoff later. `apps/matchmaker/matchmaker.http` contains a sample request.
 
 ## Debugging
 
-1. Run the shared IntelliJ configuration **Start Dev Server** to start Wrangler inside devenv.
+1. Run the shared IntelliJ configurations **Start Game Session** and **Start Dev Server** to start both Workers inside devenv.
 2. Select **Debug Worker** and click **Debug**. It attaches to the Worker's inspector at `localhost:9229`. If the connection closes, start **Debug Worker** again; automatic reconnection is disabled to avoid repeated reconnect attempts when the inspector is unavailable.
 3. Set a breakpoint in `apps/matchmaker/src/endpoints/gameCreate.ts`, for example on the `DB.prepare` user lookup.
 4. Run **Create Game** from `apps/matchmaker/matchmaker.http` with the `local` environment selected. IntelliJ pauses at the breakpoint so you can inspect variables. Resume execution to let the HTTP request finish.

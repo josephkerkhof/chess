@@ -16,6 +16,15 @@
       "migrations_dir": "../../packages/database/migrations",
     },
   ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "GAME_SESSION",
+        "class_name": "GameSession",
+        "script_name": "chess-game-session",
+      },
+    ],
+  },
   "upload_source_maps": true,
   /**
    * Smart Placement

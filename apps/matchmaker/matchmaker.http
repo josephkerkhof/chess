@@ -3,6 +3,7 @@ POST {{url}}/api/games
 Content-Type: application/json
 
 {
+  "gameId": "01890f4e-93ad-7cc4-8a8f-5b2966e01468",
   "players": [
     "{{ada_public_id}}",
     "{{grace_public_id}}"

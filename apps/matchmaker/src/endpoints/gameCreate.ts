@@ -2,8 +2,8 @@ import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import { type AppContext, GameRequest, GameResponse } from "../types";
 import { ServerErrorResponse } from "../errors";
-import { v7 as uuidv7 } from "uuid";
 import { sqliteTimestampToIso } from "../timestamps";
+import type { GameSession } from "../../../game-session/src/index";
 
 type UserRow = {
   id: number;
@@ -13,6 +13,10 @@ type UserRow = {
 
 type GameRow = {
   public_id: string;
+  white_user_id: number;
+  black_user_id: number;
+  status: string;
+  fen: string;
   created_at: string;
 };
 
@@ -43,6 +47,17 @@ export class GameCreate extends OpenAPIRoute {
           },
         },
       },
+      "200": {
+        description: "Returns the game for a repeated creation request",
+        content: {
+          "application/json": {
+            schema: z.object({
+              success: z.literal(true),
+              game: GameResponse,
+            }),
+          },
+        },
+      },
       "500": {
         description: "Server error",
         content: {
@@ -61,6 +76,17 @@ export class GameCreate extends OpenAPIRoute {
           },
         },
       },
+      "409": {
+        description: "The game ID is already assigned to another match",
+        content: {
+          "application/json": {
+            schema: z.object({
+              success: z.literal(false),
+              message: z.string(),
+            }),
+          },
+        },
+      },
     },
   };
 
@@ -70,11 +96,7 @@ export class GameCreate extends OpenAPIRoute {
 
     // TODO: make this route internal-only for the matchmaking DO
 
-    // This endpoint doesn't track who created the game. This is becuase eventually, I want
-    // to use a matchmaking service. I don't think users will create games directly via this
-    // endpoint. We'll see...
-    // Another thing is that there's no throttling on this endpoint at the minute so people
-    // could spam it.
+    // The matchmaking caller must reuse gameId when retrying this handoff.
 
     // lookup the users
     const users = await c.env.DB.prepare(
@@ -93,44 +115,68 @@ export class GameCreate extends OpenAPIRoute {
       return c.json({ success: false }, 404);
     }
 
-    // assign black and white roles to players
+    // Choose colors only for a new row. An existing row retains its original colors.
     const [first, second] = users.results;
     if (!first || !second) {
       throw new Error("Expected two users");
     }
-    const [white, black] =
+    const [candidateWhite, candidateBlack] =
       Math.random() < 0.5 ? [first, second] : [second, first];
 
-    const game = await c.env.DB.prepare(
+    const inserted = await c.env.DB.prepare(
       `
         INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
         VALUES (?, ?, ?, 'pending', ?)
-        RETURNING public_id, created_at
+        ON CONFLICT (public_id) DO NOTHING
+        RETURNING public_id, white_user_id, black_user_id, status, fen, created_at
       `,
     )
-      .bind(uuidv7(), white.id, black.id, initialFen)
+      .bind(requestBody.gameId, candidateWhite.id, candidateBlack.id, initialFen)
       .first<GameRow>();
 
+    const game = inserted ?? await c.env.DB.prepare(
+      "SELECT public_id, white_user_id, black_user_id, status, fen, created_at FROM games WHERE public_id = ?",
+    ).bind(requestBody.gameId).first<GameRow>();
+
     if (!game) {
-      throw new Error("Game insert did not return a row");
+      throw new Error("Game insert did not return a row and no existing game was found");
     }
 
-    // return the new game
+    const white = users.results.find((user) => user.id === game.white_user_id);
+    const black = users.results.find((user) => user.id === game.black_user_id);
+    if (!white || !black || game.status !== "pending" && game.status !== "active") {
+      return c.json({ success: false, message: "Game ID is already assigned to another match" }, 409);
+    }
+
+    const session = c.env.GAME_SESSION.getByName(game.public_id) as DurableObjectStub<GameSession>;
+    const state = await session.initializeGame({
+      gameId: game.public_id,
+      whiteUserId: white.public_id,
+      blackUserId: black.public_id,
+      initialFen,
+    });
+
+    if (game.status === "pending") {
+      await c.env.DB.prepare(
+        "UPDATE games SET status = 'active' WHERE public_id = ? AND status = 'pending'",
+      ).bind(game.public_id).run();
+    }
+
     return c.json(
       {
         success: true,
         game: {
           id: game.public_id,
-          status: "pending",
+          status: state.status,
           turn: "white",
           white: { id: white.public_id, name: white.name },
           black: { id: black.public_id, name: black.name },
-          fen: initialFen,
+          fen: state.fen,
           moves: [],
           created_at: sqliteTimestampToIso(game.created_at),
         },
       },
-      201,
+      inserted ? 201 : 200,
     );
   }
 }
