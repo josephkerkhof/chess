@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { GameSession } from "../../../game-session/src";
 import { ServerErrorResponse } from "../errors";
 import { sqliteTimestampToIso } from "../timestamps";
-import { type AppContext, GameResponse } from "../types";
+import { type AppContext, GameColor, GameResponse, GameStatus } from "../types";
 
 type GameRow = {
   white_user_id: string;
@@ -53,8 +53,8 @@ export class GameGet extends OpenAPIRoute {
        FROM games
        JOIN users AS white ON white.id = games.white_user_id
        JOIN users AS black ON black.id = games.black_user_id
-       WHERE games.public_id = ? AND games.status = 'active'`,
-    ).bind(params.gameId).first<GameRow>();
+       WHERE games.public_id = ? AND games.status = ?`,
+    ).bind(params.gameId, GameStatus.Active).first<GameRow>();
     if (!row) return c.json({ success: false }, 404);
 
     const session = c.env.GAME_SESSION.getByName(params.gameId) as DurableObjectStub<GameSession>;
@@ -77,7 +77,7 @@ export class GameGet extends OpenAPIRoute {
       game: {
         id: snapshot.gameId,
         status: snapshot.status,
-        turn: activeColor === "w" ? "white" : "black",
+        turn: activeColor === "w" ? GameColor.White : GameColor.Black,
         white: { id: row.white_user_id, name: row.white_name },
         black: { id: row.black_user_id, name: row.black_name },
         fen: snapshot.fen,

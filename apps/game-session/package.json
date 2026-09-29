@@ -9,6 +9,9 @@
     "start": "wrangler dev",
     "cf-typegen": "wrangler types"
   },
+  "dependencies": {
+    "@chess/shared": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^25.9.5",
     "wrangler": "^4.126.0"

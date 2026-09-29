@@ -2,7 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { v7 as uuidv7 } from "uuid";
 import type { z } from "zod";
 import { handoffGame } from "./gameHandoff";
-import type { MatchmakingState } from "./types";
+import { GameColor, type MatchmakingState } from "./types";
 
 type MatchState = z.infer<typeof MatchmakingState>;
 type EntryRow = { game_id: string | null };
@@ -111,7 +111,7 @@ export class MatchmakingQueue extends DurableObject<Env> {
     return {
       status: "matched",
       gameId: match.game_id,
-      color: match.white_user_id === userId ? "white" : "black",
+      color: match.white_user_id === userId ? GameColor.White : GameColor.Black,
       opponentId: match.first_user_id === userId
         ? match.second_user_id
         : match.first_user_id,

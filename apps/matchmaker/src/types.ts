@@ -1,10 +1,13 @@
 import type { Context } from "hono";
 import { z } from "zod";
+import { GameColor, GameStatus } from "@chess/shared/game";
+
+export { GameColor, GameStatus };
 
 export type AppContext = Context<{ Bindings: Env }>;
 
-export const GameStatus = z.enum(["pending", "active", "abandoned", "completed"]);
-export const GameTurn = z.enum(["black", "white"]);
+export const GameStatusSchema = z.enum(GameStatus);
+export const GameColorSchema = z.enum(GameColor);
 
 export const GameRequest = z.object({
   gameId: z.uuidv7(),
@@ -21,7 +24,7 @@ export const MatchmakingState = z.discriminatedUnion("status", [
   z.object({
     status: z.literal("matched"),
     gameId: z.uuidv7(),
-    color: z.enum(["white", "black"]),
+    color: GameColorSchema,
     opponentId: z.uuidv7(),
   }),
 ]);
@@ -33,8 +36,8 @@ const player = z.object({
 
 export const GameResponse = z.object({
   id: z.string(),
-  status: GameStatus,
-  turn: GameTurn,
+  status: GameStatusSchema,
+  turn: GameColorSchema,
   white: player,
   black: player,
   fen: z.string(), // TODO: add fen validation? see: https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation

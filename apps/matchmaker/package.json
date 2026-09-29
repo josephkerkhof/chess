@@ -11,6 +11,7 @@
     "test": "pnpm --dir ../game-session exec wrangler deploy --dry-run --outdir ../matchmaker/.wrangler/game-session-test && vitest run"
   },
   "dependencies": {
+    "@chess/shared": "workspace:*",
     "chanfana": "^3.3.0",
     "hono": "^4.12.12",
     "uuid": "^14.0.2",

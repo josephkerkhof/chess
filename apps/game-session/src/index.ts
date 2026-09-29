@@ -1,4 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
+import { GameStatus } from "@chess/shared/game";
 
 export type GameInitialization = {
   gameId: string;
@@ -9,7 +10,7 @@ export type GameInitialization = {
 
 export type GameState = GameInitialization & {
   fen: string;
-  status: "active";
+  status: typeof GameStatus.Active;
 };
 
 export type GameMove = {
@@ -63,15 +64,16 @@ export class GameSession extends DurableObject<Env> {
 
     this.ctx.storage.sql.exec(
       `INSERT INTO game (id, game_id, white_user_id, black_user_id, initial_fen, fen, status)
-       VALUES (1, ?, ?, ?, ?, ?, 'active')`,
+       VALUES (1, ?, ?, ?, ?, ?, ?)`,
       input.gameId,
       input.whiteUserId,
       input.blackUserId,
       input.initialFen,
       input.initialFen,
+      GameStatus.Active,
     );
 
-    return { ...input, fen: input.initialFen, status: "active" };
+    return { ...input, fen: input.initialFen, status: GameStatus.Active };
   }
 
   getGame(): GameState | null {

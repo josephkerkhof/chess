@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import type { GameSession } from "../../game-session/src/index";
 import { sqliteTimestampToIso } from "./timestamps";
-import type { GameRequest, GameResponse } from "./types";
+import { GameColor, type GameRequest, type GameResponse, GameStatus } from "./types";
 
 type GameInput = z.infer<typeof GameRequest>;
 type Game = z.infer<typeof GameResponse>;
@@ -16,7 +16,7 @@ type GameRow = {
   public_id: string;
   white_user_id: number;
   black_user_id: number;
-  status: string;
+  status: GameStatus;
   created_at: string;
 };
 
@@ -52,10 +52,10 @@ export async function handoffGame(env: Env, input: GameInput): Promise<{ game: G
 
   const inserted = await env.DB.prepare(
     `INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
-     VALUES (?, ?, ?, 'pending', ?)
+     VALUES (?, ?, ?, ?, ?)
      ON CONFLICT (public_id) DO NOTHING
      RETURNING public_id, white_user_id, black_user_id, status, created_at`,
-  ).bind(input.gameId, candidateWhite.id, candidateBlack.id, initialFen).first<GameRow>();
+  ).bind(input.gameId, candidateWhite.id, candidateBlack.id, GameStatus.Pending, initialFen).first<GameRow>();
 
   const row = inserted ?? await env.DB.prepare(
     "SELECT public_id, white_user_id, black_user_id, status, created_at FROM games WHERE public_id = ?",
@@ -66,7 +66,7 @@ export async function handoffGame(env: Env, input: GameInput): Promise<{ game: G
 
   const white = users.results.find((user) => user.id === row.white_user_id);
   const black = users.results.find((user) => user.id === row.black_user_id);
-  if (!white || !black || (row.status !== "pending" && row.status !== "active")) {
+  if (!white || !black || (row.status !== GameStatus.Pending && row.status !== GameStatus.Active)) {
     throw new GameHandoffError(409, "Game ID is already assigned to another match");
   }
 
@@ -78,10 +78,10 @@ export async function handoffGame(env: Env, input: GameInput): Promise<{ game: G
     initialFen,
   });
 
-  if (row.status === "pending") {
+  if (row.status === GameStatus.Pending) {
     await env.DB.prepare(
-      "UPDATE games SET status = 'active' WHERE public_id = ? AND status = 'pending'",
-    ).bind(row.public_id).run();
+      "UPDATE games SET status = ? WHERE public_id = ? AND status = ?",
+    ).bind(GameStatus.Active, row.public_id, GameStatus.Pending).run();
   }
 
   return {
@@ -89,7 +89,7 @@ export async function handoffGame(env: Env, input: GameInput): Promise<{ game: G
     game: {
       id: row.public_id,
       status: state.status,
-      turn: "white",
+      turn: GameColor.White,
       white: { id: white.public_id, name: white.name },
       black: { id: black.public_id, name: black.name },
       fen: state.fen,

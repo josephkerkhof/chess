@@ -15,6 +15,10 @@ importers:
         version: 7.0.2
 
   apps/game-session:
+    dependencies:
+      '@chess/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
     devDependencies:
       '@types/node':
         specifier: ^25.9.5
@@ -25,6 +29,9 @@ importers:
 
   apps/matchmaker:
     dependencies:
+      '@chess/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       chanfana:
         specifier: ^3.3.0
         version: 3.4.0(hono@4.13.4)
@@ -52,6 +59,8 @@ importers:
         version: 4.127.0
 
   packages/database: {}
+
+  packages/shared: {}
 
 packages:
 
