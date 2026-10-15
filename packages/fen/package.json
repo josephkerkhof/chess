@@ -1,0 +1,17 @@
+{
+  "name": "@chess/fen",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Forsyth-Edwards Notation",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --project tsconfig.json"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.11"
+  }
+}

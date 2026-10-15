@@ -10,7 +10,7 @@
     "start": "pnpm dev",
     "cf-typegen": "pnpm --filter './apps/*' --if-present cf-typegen",
     "test": "pnpm -r --if-present run test",
-    "typecheck": "tsc --project apps/matchmaker/tsconfig.json && tsc --project apps/matchmaker/test/tsconfig.json && tsc --project apps/game-session/tsconfig.json",
+    "typecheck": "tsc --project packages/fen/tsconfig.json && tsc --project apps/matchmaker/tsconfig.json && tsc --project apps/matchmaker/test/tsconfig.json && tsc --project apps/game-session/tsconfig.json",
     "db:migration": "pnpm --dir apps/matchmaker exec wrangler d1 migrations create DB",
     "db:migrate:local": "pnpm --dir apps/matchmaker exec wrangler d1 migrations apply DB --local",
     "db:fresh:local": "rm -rf apps/matchmaker/.wrangler/state && pnpm db:migrate:local",
