@@ -10,10 +10,10 @@ export class FenValidator {
     const [
       piecePlacement,
       activeColor,
-      castlingAvailability,
-      enPassantTargetSquare,
-      halfMoveClock,
-      fullMoveNumber,
+      _castlingAvailability,
+      _enPassantTargetSquare,
+      _halfMoveClock,
+      _fullMoveNumber,
     ] = fields;
 
     this.validatePiecePlacementRows(piecePlacement);
