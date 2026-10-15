@@ -20,6 +20,10 @@ path to any of these commands, for example `pnpm lint packages/fen/src/fen-valid
 Both tools use their default rules and formatting options. Their root configuration files exclude the generated
 `worker-configuration.d.ts` files.
 
+Installing dependencies activates the Git pre-commit hook through the `prepare` script. Before each commit, the hook
+runs `pnpm check`: formatting checks across the repository, followed by linting with warnings treated as failures.
+The hook enters `devenv shell` if pnpm is not already available. You can also run `pnpm check` directly.
+
 ## Get started
 
 1. Sign up for [Cloudflare Workers](https://workers.dev). The free tier is more than enough for most use cases.

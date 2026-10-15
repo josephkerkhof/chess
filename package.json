@@ -2,6 +2,7 @@
   "name": "chess",
   "private": true,
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "deploy": "pnpm --filter @chess/game-session deploy && pnpm --filter @chess/matchmaker deploy",
     "dev": "pnpm --dir apps/matchmaker exec wrangler dev -c wrangler.jsonc -c ../game-session/wrangler.jsonc",
     "dev:matchmaker": "pnpm --filter @chess/matchmaker dev",
@@ -13,6 +14,7 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
+    "check": "pnpm format:check && pnpm lint --deny-warnings",
     "typecheck": "tsc --project packages/fen/tsconfig.json && tsc --project apps/matchmaker/tsconfig.json && tsc --project apps/matchmaker/test/tsconfig.json && tsc --project apps/game-session/tsconfig.json",
     "db:migration": "pnpm --dir apps/matchmaker exec wrangler d1 migrations create DB",
     "db:migrate:local": "pnpm --dir apps/matchmaker exec wrangler d1 migrations apply DB --local",
