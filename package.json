@@ -1,7 +1,6 @@
 {
   "name": "chess",
   "private": true,
-  "packageManager": "pnpm@11.25.0",
   "scripts": {
     "deploy": "pnpm --filter @chess/game-session deploy && pnpm --filter @chess/matchmaker deploy",
     "dev": "pnpm --dir apps/matchmaker exec wrangler dev -c wrangler.jsonc -c ../game-session/wrangler.jsonc",
@@ -10,6 +9,10 @@
     "start": "pnpm dev",
     "cf-typegen": "pnpm --filter './apps/*' --if-present cf-typegen",
     "test": "pnpm -r --if-present run test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "typecheck": "tsc --project packages/fen/tsconfig.json && tsc --project apps/matchmaker/tsconfig.json && tsc --project apps/matchmaker/test/tsconfig.json && tsc --project apps/game-session/tsconfig.json",
     "db:migration": "pnpm --dir apps/matchmaker exec wrangler d1 migrations create DB",
     "db:migrate:local": "pnpm --dir apps/matchmaker exec wrangler d1 migrations apply DB --local",
@@ -18,6 +21,9 @@
     "db:open:local": "sqlite3 apps/matchmaker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/[a-f0-9]*.sqlite"
   },
   "devDependencies": {
+    "oxfmt": "^0.73.0",
+    "oxlint": "^1.88.0",
     "typescript": "^7.0.2"
-  }
+  },
+  "packageManager": "pnpm@11.25.0"
 }
