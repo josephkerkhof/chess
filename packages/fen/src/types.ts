@@ -1,4 +1,5 @@
-export type FenColor = "w" | "b";
+export const FEN_COLORS = ["w", "b"] as const;
+export type FenColor = (typeof FEN_COLORS)[number];
 
 export type FenCastlingRight = "K" | "Q" | "k" | "q";
 
