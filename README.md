@@ -11,6 +11,15 @@ This project uses [devenv](https://devenv.sh/) to provide Node.js, pnpm, and SQL
 the environment with `devenv shell`. If direnv is installed, run `direnv allow` once to activate it automatically when
 entering the repository. Then install the npm dependencies with `pnpm install --frozen-lockfile`.
 
+## Code checks
+
+Run `pnpm lint` to check JavaScript and TypeScript with Oxlint, and `pnpm format:check` to check formatting with Oxfmt.
+Use `pnpm lint:fix` to apply safe lint fixes, or `pnpm format` to format files. To work on one file at a time, append its
+path to any of these commands, for example `pnpm lint packages/fen/src/fen-validator.ts`.
+
+Both tools use their default rules and formatting options. Their root configuration files exclude the generated
+`worker-configuration.d.ts` files.
+
 ## Get started
 
 1. Sign up for [Cloudflare Workers](https://workers.dev). The free tier is more than enough for most use cases.

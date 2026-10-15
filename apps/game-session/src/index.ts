@@ -26,7 +26,7 @@ export class GameSession extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.ctx.storage.sql.exec(
-        `
+      `
           CREATE TABLE IF NOT EXISTS game (
             id INTEGER PRIMARY KEY CHECK (id = 1),
             game_id TEXT NOT NULL,
@@ -36,15 +36,15 @@ export class GameSession extends DurableObject<Env> {
             fen TEXT NOT NULL,
             status TEXT NOT NULL CHECK (status = 'active')
           );
-        `
+        `,
     );
     this.ctx.storage.sql.exec(
-        `
+      `
           CREATE TABLE IF NOT EXISTS moves (
             ply INTEGER PRIMARY KEY CHECK (ply > 0),
             san TEXT NOT NULL
           );
-        `
+        `,
     );
   }
 
@@ -67,23 +67,24 @@ export class GameSession extends DurableObject<Env> {
     }
 
     this.ctx.storage.sql.exec(
-        `
+      `
           INSERT INTO game (id, game_id, white_user_id, black_user_id, initial_fen, fen, status)
           VALUES (1, ?, ?, ?, ?, ?, ?);
         `,
-        input.gameId,
-        input.whiteUserId,
-        input.blackUserId,
-        input.initialFen,
-        input.initialFen,
-        GameStatus.Active,
+      input.gameId,
+      input.whiteUserId,
+      input.blackUserId,
+      input.initialFen,
+      input.initialFen,
+      GameStatus.Active,
     );
 
     return { ...input, fen: input.initialFen, status: GameStatus.Active };
   }
 
   getGame(): GameState | null {
-    const row = this.ctx.storage.sql.exec<GameState>(
+    const row = this.ctx.storage.sql
+      .exec<GameState>(
         `
           SELECT game_id AS gameId,
                  white_user_id AS whiteUserId,
@@ -94,7 +95,8 @@ export class GameSession extends DurableObject<Env> {
           FROM game
           WHERE id = 1;
         `,
-    ).toArray()[0];
+      )
+      .toArray()[0];
 
     return row ?? null;
   }
@@ -103,13 +105,15 @@ export class GameSession extends DurableObject<Env> {
     const game = this.getGame();
     if (!game) return null;
 
-    const moves = this.ctx.storage.sql.exec<GameMove>(
+    const moves = this.ctx.storage.sql
+      .exec<GameMove>(
         `
           SELECT ply, san
           FROM moves
           ORDER BY ply ASC;
         `,
-    ).toArray();
+      )
+      .toArray();
 
     return { ...game, moves };
   }

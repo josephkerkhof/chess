@@ -1,5 +1,5 @@
 import { FenValidationError } from "./errors/fen-validation-error";
-import {FEN_COLORS, type FenColor} from "./types";
+import { FEN_COLORS, type FenColor } from "./types";
 
 type FenFields = readonly [string, string, string, string, string, string];
 
@@ -8,12 +8,12 @@ export class FenValidator {
     this.validateFieldCount(fields);
 
     const [
-        piecePlacement,
-        activeColor,
-        castlingAvailability,
-        enPassantTargetSquare,
-        halfMoveClock,
-        fullMoveNumber,
+      piecePlacement,
+      activeColor,
+      castlingAvailability,
+      enPassantTargetSquare,
+      halfMoveClock,
+      fullMoveNumber,
     ] = fields;
 
     this.validatePiecePlacementRows(piecePlacement);

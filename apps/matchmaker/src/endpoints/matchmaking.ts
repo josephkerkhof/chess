@@ -48,9 +48,7 @@ export class MatchmakingJoin extends OpenAPIRoute {
   async handle(c: AppContext) {
     const { params, body } = await this.getValidatedData<typeof this.schema>();
     const match = await queueFor(c.env, params.poolId).join(body.userId);
-    return match
-      ? c.json({ success: true, match }, 200)
-      : c.json({ success: false }, 404);
+    return match ? c.json({ success: true, match }, 200) : c.json({ success: false }, 404);
   }
 }
 
@@ -80,8 +78,6 @@ export class MatchmakingStatus extends OpenAPIRoute {
   async handle(c: AppContext) {
     const { params } = await this.getValidatedData<typeof this.schema>();
     const match = await queueFor(c.env, params.poolId).status(params.userId);
-    return match
-      ? c.json({ success: true, match }, 200)
-      : c.json({ success: false }, 404);
+    return match ? c.json({ success: true, match }, 200) : c.json({ success: false }, 404);
   }
 }

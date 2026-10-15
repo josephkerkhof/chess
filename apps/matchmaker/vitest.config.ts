@@ -16,10 +16,7 @@ export default defineConfig(async () => {
           workers: [
             {
               name: "chess-game-session",
-              scriptPath: path.join(
-                import.meta.dirname,
-                ".wrangler/game-session-test/index.js",
-              ),
+              scriptPath: path.join(import.meta.dirname, ".wrangler/game-session-test/index.js"),
               modules: true,
               durableObjects: {
                 GAME_SESSION: { className: "GameSession", useSQLite: true },

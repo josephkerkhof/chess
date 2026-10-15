@@ -31,14 +31,19 @@ export class GameHandoffError extends Error {
   }
 }
 
-export async function handoffGame(env: Env, input: GameInput): Promise<{ game: Game; created: boolean }> {
+export async function handoffGame(
+  env: Env,
+  input: GameInput,
+): Promise<{ game: Game; created: boolean }> {
   const users = await env.DB.prepare(
-      `
+    `
         SELECT id, public_id, name
         FROM users
         WHERE public_id IN (?, ?);
       `,
-  ).bind(input.players[0], input.players[1]).all<UserRow>();
+  )
+    .bind(input.players[0], input.players[1])
+    .all<UserRow>();
 
   if (!users.success) {
     throw new Error("User lookup failed");
@@ -51,25 +56,30 @@ export async function handoffGame(env: Env, input: GameInput): Promise<{ game: G
   if (!first || !second) {
     throw new Error("Expected two users");
   }
-  const [candidateWhite, candidateBlack] =
-    Math.random() < 0.5 ? [first, second] : [second, first];
+  const [candidateWhite, candidateBlack] = Math.random() < 0.5 ? [first, second] : [second, first];
 
   const inserted = await env.DB.prepare(
-      `
+    `
         INSERT INTO games (public_id, white_user_id, black_user_id, status, fen)
         VALUES (?, ?, ?, ?, ?)
         ON CONFLICT (public_id) DO NOTHING
         RETURNING public_id, white_user_id, black_user_id, status, created_at;
       `,
-  ).bind(input.gameId, candidateWhite.id, candidateBlack.id, GameStatus.Pending, initialFen).first<GameRow>();
+  )
+    .bind(input.gameId, candidateWhite.id, candidateBlack.id, GameStatus.Pending, initialFen)
+    .first<GameRow>();
 
-  const row = inserted ?? await env.DB.prepare(
+  const row =
+    inserted ??
+    (await env.DB.prepare(
       `
         SELECT public_id, white_user_id, black_user_id, status, created_at
         FROM games
         WHERE public_id = ?;
       `,
-  ).bind(input.gameId).first<GameRow>();
+    )
+      .bind(input.gameId)
+      .first<GameRow>());
   if (!row) {
     throw new Error("Game insert did not return a row and no existing game was found");
   }
@@ -90,12 +100,14 @@ export async function handoffGame(env: Env, input: GameInput): Promise<{ game: G
 
   if (row.status === GameStatus.Pending) {
     await env.DB.prepare(
-        `
+      `
           UPDATE games
           SET status = ?
           WHERE public_id = ? AND status = ?;
         `,
-    ).bind(GameStatus.Active, row.public_id, GameStatus.Pending).run();
+    )
+      .bind(GameStatus.Active, row.public_id, GameStatus.Pending)
+      .run();
   }
 
   return {

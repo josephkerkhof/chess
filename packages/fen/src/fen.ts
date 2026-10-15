@@ -1,10 +1,5 @@
 import { FenValidator } from "./fen-validator";
-import type {
-  FenCastlingRight,
-  FenColor,
-  FenEnPassantSquare,
-  FenPosition,
-} from "./types";
+import type { FenCastlingRight, FenColor, FenEnPassantSquare, FenPosition } from "./types";
 
 export class Fen implements FenPosition {
   public readonly piecePlacement: string;
@@ -55,12 +50,9 @@ export class Fen implements FenPosition {
     return {
       piecePlacement,
       activeColor: activeColor as FenColor,
-      castlingAvailability: castlingAvailability === "-"
-        ? []
-        : castlingAvailability.split("") as FenCastlingRight[],
-      enPassantTarget: enPassantTarget === "-"
-        ? null
-        : enPassantTarget as FenEnPassantSquare,
+      castlingAvailability:
+        castlingAvailability === "-" ? [] : (castlingAvailability.split("") as FenCastlingRight[]),
+      enPassantTarget: enPassantTarget === "-" ? null : (enPassantTarget as FenEnPassantSquare),
       halfmoveClock: Number(halfmoveClock),
       fullmoveNumber: Number(fullmoveNumber),
     };

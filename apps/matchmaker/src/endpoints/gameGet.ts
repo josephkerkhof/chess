@@ -47,7 +47,7 @@ export class GameGet extends OpenAPIRoute {
   async handle(c: AppContext) {
     const { params } = await this.getValidatedData<typeof this.schema>();
     const row = await c.env.DB.prepare(
-        `
+      `
           SELECT white.public_id AS white_user_id, white.name AS white_name,
                  black.public_id AS black_user_id, black.name AS black_name,
                  games.created_at
@@ -57,13 +57,16 @@ export class GameGet extends OpenAPIRoute {
           WHERE games.public_id = ?
             AND games.status = ?;
         `,
-    ).bind(params.gameId, GameStatus.Active).first<GameRow>();
+    )
+      .bind(params.gameId, GameStatus.Active)
+      .first<GameRow>();
     if (!row) return c.json({ success: false }, 404);
 
     const session = c.env.GAME_SESSION.getByName(params.gameId) as DurableObjectStub<GameSession>;
     const snapshot = await session.getSnapshot();
     if (
-      !snapshot || snapshot.gameId !== params.gameId ||
+      !snapshot ||
+      snapshot.gameId !== params.gameId ||
       snapshot.whiteUserId !== row.white_user_id ||
       snapshot.blackUserId !== row.black_user_id
     ) {
@@ -75,18 +78,21 @@ export class GameGet extends OpenAPIRoute {
       throw new Error(`Game ${params.gameId} has an invalid active color in its FEN`);
     }
 
-    return c.json({
-      success: true,
-      game: {
-        id: snapshot.gameId,
-        status: snapshot.status,
-        turn: activeColor === "w" ? GameColor.White : GameColor.Black,
-        white: { id: row.white_user_id, name: row.white_name },
-        black: { id: row.black_user_id, name: row.black_name },
-        fen: snapshot.fen,
-        moves: snapshot.moves,
-        createdAt: sqliteTimestampToIso(row.created_at),
+    return c.json(
+      {
+        success: true,
+        game: {
+          id: snapshot.gameId,
+          status: snapshot.status,
+          turn: activeColor === "w" ? GameColor.White : GameColor.Black,
+          white: { id: row.white_user_id, name: row.white_name },
+          black: { id: row.black_user_id, name: row.black_name },
+          fen: snapshot.fen,
+          moves: snapshot.moves,
+          createdAt: sqliteTimestampToIso(row.created_at),
+        },
       },
-    }, 200);
+      200,
+    );
   }
 }
