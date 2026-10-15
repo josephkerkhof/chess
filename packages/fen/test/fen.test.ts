@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import {expect, it} from "vitest";
 import { Fen, STARTING_FEN } from "../src";
 
 it("returns the starting FEN from toString()", () => {
