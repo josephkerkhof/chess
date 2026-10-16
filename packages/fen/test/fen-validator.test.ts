@@ -227,3 +227,95 @@ describe("en passant target square", () => {
     expect(validate).not.toThrow();
   });
 });
+
+describe("half move clock", () => {
+  it.each(["0", "1", "50"])("accepts half move clock %j", (halfMoveClock) => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
+    fields[4] = halfMoveClock;
+
+    // When
+    const validate = () => validator.validate(fields);
+
+    // Then
+    expect(validate).not.toThrow();
+  });
+
+  it.each(["abc", "1.5", "NaN", "Infinity", "-Infinity"])(
+    "rejects non-integer half move clock %j",
+    (halfMoveClock) => {
+      // Given
+      const validator = new FenValidator();
+      const fields = STARTING_FEN.split(" ");
+      fields[4] = halfMoveClock;
+
+      // When
+      const validate = () => validator.validate(fields);
+
+      // Then
+      expect(validate).toThrow(FenValidationError);
+      expect(validate).toThrow("Half move clock must be an integer");
+    },
+  );
+
+  it.each(["-1", "-50"])("rejects negative half move clock %j", (halfMoveClock) => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
+    fields[4] = halfMoveClock;
+
+    // When
+    const validate = () => validator.validate(fields);
+
+    // Then
+    expect(validate).toThrow(FenValidationError);
+    expect(validate).toThrow("Half move clock must be a positive number");
+  });
+});
+
+describe("full move number", () => {
+  it.each(["1", "2", "100"])("accepts full move number %j", (fullMoveNumber) => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
+    fields[5] = fullMoveNumber;
+
+    // When
+    const validate = () => validator.validate(fields);
+
+    // Then
+    expect(validate).not.toThrow();
+  });
+
+  it.each(["abc", "1.5", "NaN", "Infinity", "-Infinity"])(
+    "rejects non-integer full move number %j",
+    (fullMoveNumber) => {
+      // Given
+      const validator = new FenValidator();
+      const fields = STARTING_FEN.split(" ");
+      fields[5] = fullMoveNumber;
+
+      // When
+      const validate = () => validator.validate(fields);
+
+      // Then
+      expect(validate).toThrow(FenValidationError);
+      expect(validate).toThrow("Full move number must be an integer");
+    },
+  );
+
+  it.each(["0", "-1", "-100"])("rejects non-positive full move number %j", (fullMoveNumber) => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
+    fields[5] = fullMoveNumber;
+
+    // When
+    const validate = () => validator.validate(fields);
+
+    // Then
+    expect(validate).toThrow(FenValidationError);
+    expect(validate).toThrow("Full move number must be a positive number");
+  });
+});

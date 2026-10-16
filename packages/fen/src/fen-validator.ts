@@ -14,18 +14,18 @@ export class FenValidator {
       activeColor,
       castlingAvailability,
       enPassantTargetSquare,
-      _halfMoveClock,
-      _fullMoveNumber,
+      halfMoveClock,
+      fullMoveNumber,
     ] = fields;
 
     this.validatePiecePlacementRows(piecePlacement);
-    // TODO add more checks for piece placement
+    // TODO add more checks for piece placement?
 
     const parsedActiveColor = parseFenColor(activeColor);
     this.validateCastlingAvailability(castlingAvailability);
     this.validateEnPassantTargetSquare(enPassantTargetSquare, parsedActiveColor);
-
-    // TODO add more checks
+    this.validateHalfMoveClock(halfMoveClock);
+    this.validateFullMoveNumber(fullMoveNumber);
   }
 
   private validateFieldCount(fields: readonly string[]): asserts fields is FenFields {
@@ -87,6 +87,30 @@ export class FenValidator {
       throw new FenValidationError(
         "En passant target square rank must be 6 when active color is white",
       );
+    }
+  }
+
+  private validateHalfMoveClock(halfMoveClock: string): void {
+    const halfMoveClockNumber = Number(halfMoveClock);
+
+    if (isNaN(halfMoveClockNumber) || !Number.isInteger(halfMoveClockNumber)) {
+      throw new FenValidationError("Half move clock must be an integer");
+    }
+
+    if (halfMoveClockNumber < 0) {
+      throw new FenValidationError("Half move clock must be a positive number");
+    }
+  }
+
+  private validateFullMoveNumber(fullMoveNumber: string): void {
+    const fullMoveNumberNumber = Number(fullMoveNumber);
+
+    if (isNaN(fullMoveNumberNumber) || !Number.isInteger(fullMoveNumberNumber)) {
+      throw new FenValidationError("Full move number must be an integer");
+    }
+
+    if (fullMoveNumberNumber < 1) {
+      throw new FenValidationError("Full move number must be a positive number");
     }
   }
 }
