@@ -1,9 +1,11 @@
+import type { ChessColor } from "@chess/core";
+import { formatFenColor, parseFenColor } from "./color";
 import { FenValidator } from "./fen-validator";
-import type { FenCastlingRight, FenColor, FenEnPassantSquare, FenPosition } from "./types";
+import type { FenCastlingRight, FenEnPassantSquare, FenPosition } from "./types";
 
 export class Fen implements FenPosition {
   public readonly piecePlacement: string;
-  public readonly activeColor: FenColor;
+  public readonly activeColor: ChessColor;
   public readonly castlingAvailability: readonly FenCastlingRight[];
   public readonly enPassantTarget: FenEnPassantSquare | null;
   public readonly halfmoveClock: number;
@@ -25,7 +27,7 @@ export class Fen implements FenPosition {
   toString(): string {
     return [
       this.piecePlacement,
-      this.activeColor,
+      formatFenColor(this.activeColor),
       this.castlingAvailability.join("") || "-",
       this.enPassantTarget ?? "-",
       this.halfmoveClock,
@@ -49,7 +51,7 @@ export class Fen implements FenPosition {
 
     return {
       piecePlacement,
-      activeColor: activeColor as FenColor,
+      activeColor: parseFenColor(activeColor),
       castlingAvailability:
         castlingAvailability === "-" ? [] : (castlingAvailability.split("") as FenCastlingRight[]),
       enPassantTarget: enPassantTarget === "-" ? null : (enPassantTarget as FenEnPassantSquare),

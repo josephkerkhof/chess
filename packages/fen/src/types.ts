@@ -1,7 +1,6 @@
-import type { ChessFile } from "@chess/core";
+import type { ChessColor, ChessFile } from "@chess/core";
 
-export const FEN_COLORS = ["w", "b"] as const;
-export type FenColor = (typeof FEN_COLORS)[number];
+export type FenColorSymbol = "w" | "b";
 
 export type FenCastlingRight = "K" | "Q" | "k" | "q"; // TODO: is this needed? it doesn't include the hyphen
 
@@ -14,9 +13,9 @@ export type FenEnPassantSquare = `${ChessFile}${"3" | "6"}`;
 export interface FenPosition {
   /** Compressed ranks, ordered from rank 8 to rank 1 and separated by `/`. */
   readonly piecePlacement: string;
-  readonly activeColor: FenColor;
+  readonly activeColor: ChessColor;
   /** An empty array represents the FEN `-` sentinel. */
-  readonly castlingAvailability: readonly FenCastlingRight[];
+  readonly castlingAvailability: readonly FenCastlingRight[]; // TODO: should this allow null?
   /** `null` represents the FEN `-` sentinel. */
   readonly enPassantTarget: FenEnPassantSquare | null;
   /** Nonnegative count of plies since the last pawn move or capture. */

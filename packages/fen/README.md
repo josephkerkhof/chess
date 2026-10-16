@@ -2,7 +2,7 @@
 
 A shared TypeScript package for standard chess Forsyth-Edwards Notation (FEN).
 The package exports ESM TypeScript source, matching `@chess/shared`, and depends
-on `@chess/core` for shared chess files and ranks. It uses the workspace's
+on `@chess/core` for shared chess colors and coordinates. It uses the workspace's
 TypeScript compiler.
 
 This is a scaffold: parsing, serialization, and runtime validation are not
@@ -19,7 +19,7 @@ import type { FenPosition } from "@chess/fen";
 
 const initialPosition: FenPosition = {
   piecePlacement: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-  activeColor: "w",
+  activeColor: "white",
   castlingAvailability: ["K", "Q", "k", "q"],
   enPassantTarget: null,
   halfmoveClock: 0,
@@ -31,6 +31,10 @@ const initialPosition: FenPosition = {
 describes the six fields as structured data, with an empty castling array and a
 `null` en passant target representing the `-` sentinels. Its types alone do not
 guarantee valid rank widths, unique castling rights, or valid move counters.
+
+Parsed active colors use core's `ChessColor` (`white` or `black`). FEN input and
+`Fen.toString()` use the notation symbols `w` and `b`, described by `FenColorSymbol`;
+the conversion stays inside this package.
 
 ## Development
 
