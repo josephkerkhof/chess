@@ -7,6 +7,10 @@ no runtime dependencies.
 notation. `ChessFile` and `ChessRank` are the corresponding string literal unions.
 These types provide compile-time checks; they do not validate input at runtime.
 
+`CHESS_PIECE_TYPES` contains `K`, `Q`, `R`, `B`, `N`, and `P`, with `ChessPieceType`
+as the corresponding literal union. These values identify piece types independently
+of color. `P` identifies a pawn internally; algebraic move notation omits that letter.
+
 Add `"@chess/core": "workspace:*"` to a consuming package's dependencies and run
 `pnpm install` from the repository root.
 
