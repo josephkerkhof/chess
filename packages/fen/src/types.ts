@@ -4,9 +4,9 @@ export type FenColor = (typeof FEN_COLORS)[number];
 export type FenCastlingRight = "K" | "Q" | "k" | "q"; // TODO: is this needed? it doesn't include the hyphen
 
 // TODO refactor this a separate package so this can be used outside of this package
-export const CHESS_FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
+export const CHESS_FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 export type ChessFile = (typeof CHESS_FILES)[number];
-export const CHESS_RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"]; // TODO: should this be a number instead of a string?
+export const CHESS_RANKS = ["1", "2", "3", "4", "5", "6", "7", "8"] as const; // TODO: should this be a number instead of a string?
 export type ChessRank = (typeof CHESS_RANKS)[number];
 
 export type FenEnPassantSquare = `${ChessFile}${"3" | "6"}`;
