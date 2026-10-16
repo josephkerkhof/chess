@@ -2,7 +2,7 @@ import type { ChessColor, ChessFile } from "@chess/core";
 
 export type FenColorSymbol = "w" | "b";
 
-export type FenCastlingRight = "K" | "Q" | "k" | "q"; // TODO: is this needed? it doesn't include the hyphen
+export type FenCastlingRight = "K" | "Q" | "k" | "q";
 
 export type FenEnPassantSquare = `${ChessFile}${"3" | "6"}`;
 
@@ -15,7 +15,7 @@ export interface FenPosition {
   readonly piecePlacement: string;
   readonly activeColor: ChessColor;
   /** An empty array represents the FEN `-` sentinel. */
-  readonly castlingAvailability: readonly FenCastlingRight[]; // TODO: should this allow null?
+  readonly castlingAvailability: readonly FenCastlingRight[];
   /** `null` represents the FEN `-` sentinel. */
   readonly enPassantTarget: FenEnPassantSquare | null;
   /** Nonnegative count of plies since the last pawn move or capture. */
