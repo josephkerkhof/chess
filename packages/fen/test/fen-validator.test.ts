@@ -26,23 +26,57 @@ it.each([5, 7])("rejects a FEN with %i fields", (fieldCount) => {
   expect(validate).toThrow("FEN must contain exactly six fields");
 });
 
-it.each([
-  { label: "seven rows", wrongPiecePlacement: "rnbqkbnr/pppppppp/8/8/8/PPPPPPPP/RNBQKBNR" },
-  { label: "nine rows", wrongPiecePlacement: "rnbqkbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR" },
-])("rejects piece placement with $label", ({ wrongPiecePlacement }) => {
-  // Given
-  const validator = new FenValidator();
-  const fields = STARTING_FEN.split(" ");
+describe("piece placement", () => {
+  it.each([
+    { label: "seven rows", wrongPiecePlacement: "rnbqkbnr/pppppppp/8/8/8/PPPPPPPP/RNBQKBNR" },
+    { label: "nine rows", wrongPiecePlacement: "rnbqkbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR" },
+  ])("rejects piece placement with $label", ({ wrongPiecePlacement }) => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
 
-  // and the piece placement row doesn't have 8 rows
-  fields[0] = wrongPiecePlacement;
+    // and the piece placement row doesn't have 8 rows
+    fields[0] = wrongPiecePlacement;
 
-  // When
-  const validate = () => validator.validate(fields);
+    // When
+    const validate = () => validator.validate(fields);
 
-  // Then
-  expect(validate).toThrow(FenValidationError);
-  expect(validate).toThrow("Piece placement must contain exactly eight rows");
+    // Then
+    expect(validate).toThrow(FenValidationError);
+    expect(validate).toThrow("Piece placement must contain exactly eight rows");
+  });
+
+  it("rejects an empty row", () => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
+
+    // and the piece placement row has an empty row (the third row)
+    fields[0] = "rnbqkbnr/pppppppp//8/8/8/PPPPPPPP/RNBQKBNR";
+
+    // When
+    const validate = () => validator.validate(fields);
+
+    // Then
+    expect(validate).toThrow(FenValidationError);
+    expect(validate).toThrow("Piece placement must not contain empty rows");
+  });
+
+  it.each(["S", 0, "&"])("rejects a row with invalid characters", (invalidCharacter) => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
+
+    // and the piece placement row has an invalid character
+    fields[0] = `rnbqkbnr/pppppppp/1${invalidCharacter}6/8/8/8/PPPPPPPP/RNBQKBNR`;
+
+    // When
+    const validate = () => validator.validate(fields);
+
+    // Then
+    expect(validate).toThrow(FenValidationError);
+    expect(validate).toThrow("Piece placement must contain only valid characters");
+  });
 });
 
 it("rejects an active color that's not 'b' or 'w'", () => {
