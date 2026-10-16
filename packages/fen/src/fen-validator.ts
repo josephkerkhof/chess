@@ -18,8 +18,11 @@ export class FenValidator {
       fullMoveNumber,
     ] = fields;
 
-    this.validatePiecePlacementRows(piecePlacement);
-    // TODO add more checks for piece placement?
+    this.validatePiecePlacementRowCount(piecePlacement);
+    // TODO reject empty rows.
+    // TODO allow only PNBRQKpnbrqk and digits 1-8 in each row.
+    // TODO require each row to expand to exactly eight squares.
+    // TODO decide whether to reject adjacent digits (44 instead of 8).
 
     const parsedActiveColor = parseFenColor(activeColor);
     this.validateCastlingAvailability(castlingAvailability);
@@ -34,7 +37,7 @@ export class FenValidator {
     }
   }
 
-  private validatePiecePlacementRows(piecePlacement: string): void {
+  private validatePiecePlacementRowCount(piecePlacement: string): void {
     const rows = piecePlacement.split("/");
     if (rows.length !== 8) {
       throw new FenValidationError("Piece placement must contain exactly eight rows");
