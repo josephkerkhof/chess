@@ -1,5 +1,11 @@
 import { FenValidationError } from "./errors/fen-validation-error";
-import { FEN_COLORS, type FenColor } from "./types";
+import {
+  CHESS_FILES,
+  type ChessFile,
+  FEN_COLORS,
+  type FenColor,
+  type FenEnPassantSquare,
+} from "./types";
 
 type FenFields = readonly [string, string, string, string, string, string];
 
@@ -11,7 +17,7 @@ export class FenValidator {
       piecePlacement,
       activeColor,
       castlingAvailability,
-      _enPassantTargetSquare,
+      enPassantTargetSquare,
       _halfMoveClock,
       _fullMoveNumber,
     ] = fields;
@@ -21,6 +27,7 @@ export class FenValidator {
 
     this.validateActiveColor(activeColor);
     this.validateCastlingAvailability(castlingAvailability);
+    this.validateEnPassantTargetSquare(enPassantTargetSquare, activeColor);
 
     // TODO add more checks
   }
@@ -52,6 +59,43 @@ export class FenValidator {
     if (!/^(?!$)K?Q?k?q?$/.test(castlingAvailability)) {
       throw new FenValidationError(
         "Castling availability must contain unique characters in KQkq order",
+      );
+    }
+  }
+
+  private validateEnPassantTargetSquare(
+    enPassantTargetSquare: string,
+    activeColor: FenColor,
+  ): asserts enPassantTargetSquare is FenEnPassantSquare | "-" {
+    if (enPassantTargetSquare === "-") {
+      return;
+    }
+
+    if (enPassantTargetSquare.length !== 2) {
+      throw new FenValidationError("En passant target square must be two characters long");
+    }
+
+    const [file, rank] = enPassantTargetSquare;
+
+    if (!CHESS_FILES.includes(file as ChessFile)) {
+      throw new FenValidationError(
+        `En passant target square file must be one of: ${CHESS_FILES.join(", ")}`,
+      );
+    }
+
+    if (rank !== "3" && rank !== "6") {
+      throw new FenValidationError("En passant target square rank must be 3 or 6");
+    }
+
+    if (activeColor === "b" && rank === "6") {
+      throw new FenValidationError(
+        "En passant target square rank must be 3 when active color is black",
+      );
+    }
+
+    if (activeColor === "w" && rank === "3") {
+      throw new FenValidationError(
+        "En passant target square rank must be 6 when active color is white",
       );
     }
   }
