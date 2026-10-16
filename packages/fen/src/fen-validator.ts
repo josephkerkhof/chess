@@ -1,11 +1,6 @@
+import { CHESS_FILES, type ChessFile } from "@chess/core";
 import { FenValidationError } from "./errors/fen-validation-error";
-import {
-  CHESS_FILES,
-  type ChessFile,
-  FEN_COLORS,
-  type FenColor,
-  type FenEnPassantSquare,
-} from "./types";
+import { FEN_COLORS, type FenColor, type FenEnPassantSquare } from "./types";
 
 type FenFields = readonly [string, string, string, string, string, string];
 

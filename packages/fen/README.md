@@ -1,8 +1,9 @@
 # @chess/fen
 
 A shared TypeScript package for standard chess Forsyth-Edwards Notation (FEN).
-The package exports ESM TypeScript source, matching `@chess/shared`, and has no
-runtime dependencies. It uses the workspace's TypeScript compiler.
+The package exports ESM TypeScript source, matching `@chess/shared`, and depends
+on `@chess/core` for shared chess files and ranks. It uses the workspace's
+TypeScript compiler.
 
 This is a scaffold: parsing, serialization, and runtime validation are not
 implemented yet.

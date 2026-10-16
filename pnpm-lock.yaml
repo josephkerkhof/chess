@@ -64,9 +64,15 @@ importers:
         specifier: ^4.126.0
         version: 4.127.0
 
+  packages/core: {}
+
   packages/database: {}
 
   packages/fen:
+    dependencies:
+      '@chess/core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       vitest:
         specifier: ^4.1.11

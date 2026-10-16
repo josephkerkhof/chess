@@ -11,6 +11,9 @@
     "test": "vitest run",
     "typecheck": "tsc --project tsconfig.json"
   },
+  "dependencies": {
+    "@chess/core": "workspace:*"
+  },
   "devDependencies": {
     "vitest": "^4.1.11"
   }
