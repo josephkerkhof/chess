@@ -60,3 +60,68 @@ it("rejects an active color that's not 'b' or 'w'", () => {
   expect(validate).toThrow(FenValidationError);
   expect(validate).toThrow("Active color must be one of: w, b");
 });
+
+it.each([
+  "-",
+  "K",
+  "Q",
+  "k",
+  "q",
+  "KQ",
+  "Kk",
+  "Kq",
+  "Qk",
+  "Qq",
+  "kq",
+  "KQk",
+  "KQq",
+  "Kkq",
+  "Qkq",
+  "KQkq",
+])("accepts castling availability %j", (castlingAvailability) => {
+  // Given
+  const validator = new FenValidator();
+  const fields = STARTING_FEN.split(" ");
+  fields[2] = castlingAvailability;
+
+  // When
+  const validate = () => validator.validate(fields);
+
+  // Then
+  expect(validate).not.toThrow();
+});
+
+it.each([
+  "",
+  "KK",
+  "QQ",
+  "kk",
+  "qq",
+  "KQK",
+  "KQkkq",
+  "QK",
+  "qk",
+  "kK",
+  "qQ",
+  "A",
+  "KQx",
+  "--",
+  "-K",
+  "K-",
+  " K",
+  "K ",
+  "K\t",
+  "K\n",
+])("rejects invalid castling availability %j", (castlingAvailability) => {
+  // Given
+  const validator = new FenValidator();
+  const fields = STARTING_FEN.split(" ");
+  fields[2] = castlingAvailability;
+
+  // When
+  const validate = () => validator.validate(fields);
+
+  // Then
+  expect(validate).toThrow(FenValidationError);
+  expect(validate).toThrow("Castling availability must contain unique characters in KQkq order");
+});
