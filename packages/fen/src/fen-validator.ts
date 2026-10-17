@@ -48,8 +48,28 @@ export class FenValidator {
       throw new FenValidationError("Piece placement must contain only valid characters");
     }
 
-    // TODO require each row to expand to exactly eight squares.
-    // TODO decide whether to reject adjacent digits (44 instead of 8).
+    const consecutiveNumbers = (row: string): boolean => {
+      return row.split("").some((current, index) => {
+        const next = row[index + 1];
+        return !isNaN(Number(current)) && !isNaN(Number(next));
+      });
+    };
+    if (!rows.every((row) => !consecutiveNumbers(row))) {
+      throw new FenValidationError("Piece placement must not contain consecutive numbers");
+    }
+
+    const rowHasEightFiles = (row: string): boolean => {
+      return (
+        row
+          .split("")
+          .map((character: string) => character.replace(/[pnbrqk]/i, "1"))
+          .map((character: string) => Number(character))
+          .reduce((total: number, current: number) => total + current, 0) === 8
+      );
+    };
+    if (!rows.every((row) => rowHasEightFiles(row))) {
+      throw new FenValidationError("Piece placement must contain exactly eight files");
+    }
   }
 
   private validateCastlingAvailability(castlingAvailability: string): void {

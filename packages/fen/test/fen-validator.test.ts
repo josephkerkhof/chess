@@ -77,6 +77,56 @@ describe("piece placement", () => {
     expect(validate).toThrow(FenValidationError);
     expect(validate).toThrow("Piece placement must contain only valid characters");
   });
+
+  it("rejects a row with consecutive numbers", () => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
+
+    // and the piece placement row has consecutive numbers
+    fields[0] = `rnbqkbnr/pppppppp/44/8/8/8/PPPPPPPP/RNBQKBNR`;
+
+    // When
+    const validate = () => validator.validate(fields);
+
+    // Then
+    expect(validate).toThrow(FenValidationError);
+    expect(validate).toThrow("Piece placement must not contain consecutive numbers");
+  });
+
+  it.each([
+    { label: "less than eight", fen: "rnbqkbnr/pppppppp/2/8/8/8/PPPPPPPP/RNBQKBNR" },
+    {
+      label: "less than eight mixed with pieces",
+      fen: "r1qkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+    },
+    { label: "more than eight", fen: "rnbqkbnr/ppp2pppp/8/8/8/8/PPPPPPPP/RNBQKBNR" },
+  ])("rejects a row with $label", ({ fen }) => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
+    fields[0] = fen;
+
+    // When
+    const validate = () => validator.validate(fields);
+
+    // Then
+    expect(validate).toThrow(FenValidationError);
+    expect(validate).toThrow("Piece placement must contain exactly eight files");
+  });
+
+  it("accepts a row mixing pieces and empty squares that totals eight files", () => {
+    // Given
+    const validator = new FenValidator();
+    const fields = STARTING_FEN.split(" ");
+    fields[0] = "rnbqkbnr/ppp1pppp/3p4/8/8/8/PPPPPPPP/RNBQKBNR";
+
+    // When
+    const validate = () => validator.validate(fields);
+
+    // Then
+    expect(validate).not.toThrow();
+  });
 });
 
 it("rejects an active color that's not 'b' or 'w'", () => {
