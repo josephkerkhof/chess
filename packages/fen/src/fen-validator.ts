@@ -124,7 +124,11 @@ export class FenValidator {
   private validateHalfMoveClock(halfMoveClock: string): void {
     const halfMoveClockNumber = Number(halfMoveClock);
 
-    if (isNaN(halfMoveClockNumber) || !Number.isInteger(halfMoveClockNumber)) {
+    if (
+      halfMoveClock.length === 0 ||
+      isNaN(halfMoveClockNumber) ||
+      !Number.isInteger(halfMoveClockNumber)
+    ) {
       throw new FenValidationError("Half move clock must be an integer");
     }
 

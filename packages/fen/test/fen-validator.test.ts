@@ -129,13 +129,12 @@ describe("piece placement", () => {
   });
 });
 
-it("rejects an active color that's not 'b' or 'w'", () => {
+it.each(["x", "white", "black"])("rejects invalid active color %j", (activeColor) => {
   // Given
   const validator = new FenValidator();
   const fields = STARTING_FEN.split(" ");
 
-  // and the active color is not 'b' or 'w'
-  fields[1] = "x";
+  fields[1] = activeColor;
 
   // When
   const validate = () => validator.validate(fields);
@@ -326,6 +325,38 @@ describe("half move clock", () => {
     expect(validate).not.toThrow();
   });
 
+  it.each(["", "\t", "0x10", "1e2", "+1", "1.0"])(
+    "rejects half move clock %j that is not a decimal digit sequence",
+    (halfMoveClock) => {
+      // Given
+      const validator = new FenValidator();
+      const fields = STARTING_FEN.split(" ");
+      fields[4] = halfMoveClock;
+
+      // When
+      const validate = () => validator.validate(fields);
+
+      // Then
+      expect(validate).toThrow(FenValidationError);
+    },
+  );
+
+  it.each(["9007199254740992", "9007199254740993"])(
+    "rejects half move clock %j outside the safe integer range",
+    (halfMoveClock) => {
+      // Given
+      const validator = new FenValidator();
+      const fields = STARTING_FEN.split(" ");
+      fields[4] = halfMoveClock;
+
+      // When
+      const validate = () => validator.validate(fields);
+
+      // Then
+      expect(validate).toThrow(FenValidationError);
+    },
+  );
+
   it.each(["abc", "1.5", "NaN", "Infinity", "-Infinity"])(
     "rejects non-integer half move clock %j",
     (halfMoveClock) => {
@@ -371,6 +402,38 @@ describe("full move number", () => {
     // Then
     expect(validate).not.toThrow();
   });
+
+  it.each(["0x10", "1e2", "+1", "1.0"])(
+    "rejects full move number %j that is not a decimal digit sequence",
+    (fullMoveNumber) => {
+      // Given
+      const validator = new FenValidator();
+      const fields = STARTING_FEN.split(" ");
+      fields[5] = fullMoveNumber;
+
+      // When
+      const validate = () => validator.validate(fields);
+
+      // Then
+      expect(validate).toThrow(FenValidationError);
+    },
+  );
+
+  it.each(["9007199254740992", "9007199254740993"])(
+    "rejects full move number %j outside the safe integer range",
+    (fullMoveNumber) => {
+      // Given
+      const validator = new FenValidator();
+      const fields = STARTING_FEN.split(" ");
+      fields[5] = fullMoveNumber;
+
+      // When
+      const validate = () => validator.validate(fields);
+
+      // Then
+      expect(validate).toThrow(FenValidationError);
+    },
+  );
 
   it.each(["abc", "1.5", "NaN", "Infinity", "-Infinity"])(
     "rejects non-integer full move number %j",
